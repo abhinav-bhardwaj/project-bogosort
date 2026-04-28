@@ -107,7 +107,6 @@ for alpha in alpha_values:
                 alpha=alpha,
                 learning_rate=lr,
                 max_iter=1000,
-                verbose=False,
             )
             lasso.fit(X_fold_train, y_fold_train, sample_weight=w_fold)
 
@@ -147,7 +146,6 @@ final_lasso = LassoLogisticRegression(
     alpha=best_alpha,
     learning_rate=best_lr,
     max_iter=1000,
-    verbose=False,
 )
 final_lasso.fit(X_train_proc, y_train, sample_weight=sample_weights)
 
@@ -163,7 +161,6 @@ lasso_threshold = LassoLogisticRegression(
     alpha=best_alpha,
     learning_rate=best_lr,
     max_iter=1000,
-    verbose=False,
 )
 lasso_threshold.fit(
     X_train_proc[last_train_idx],
@@ -188,15 +185,15 @@ final_lasso.decision_threshold = best_threshold
 y_proba_test = final_lasso.predict_proba(X_test_proc)[:, 1]
 y_pred_test  = final_lasso.predict(X_test_proc)
 
-pr_auc  = average_precision_score(y_test, y_proba_test)
-roc_auc = roc_auc_score(y_test, y_proba_test)
-macro   = f1_score(y_test, y_pred_test, average="macro", zero_division=0)
+pr_auc   = average_precision_score(y_test, y_proba_test)
+roc_auc  = roc_auc_score(y_test, y_proba_test)
+macro_f1 = f1_score(y_test, y_pred_test, average="macro", zero_division=0)
 
 print()
 print("Test set performance:")
 print(f"  PR-AUC:   {pr_auc:.4f}")
 print(f"  ROC-AUC:  {roc_auc:.4f}")
-print(f"  Macro-F1: {macro:.4f}")
+print(f"  Macro-F1: {macro_f1:.4f}")
 
 
 # ── Save ──────────────────────────────────────────────────────────────────────
