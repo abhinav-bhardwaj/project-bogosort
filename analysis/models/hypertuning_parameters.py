@@ -12,7 +12,7 @@ from sklearn.metrics import average_precision_score, f1_score, precision_recall_
 from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.preprocessing import MinMaxScaler
 
-from core_logistic_regression_lasso import LassoLogisticRegression
+from analysis.models.core_logistic_regression_lasso import LassoLogisticRegression
 from analysis.models.data_pipeline import DataPipeline
 from analysis.features.build_features import DenseFeatureTransformer
 
