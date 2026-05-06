@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"from analysis.evaluation_code.evaluator import evaluate_classification; print\\('OK'\\)\")",
+      "Bash(/c/venvs/bogosort/Scripts/python.exe -c \"from analysis.evaluation_code.evaluator import evaluate_classification; print\\('OK'\\)\")",
+      "Bash(/c/venvs/bogosort/Scripts/python.exe -c ' *)",
+      "Bash(/c/venvs/bogosort/Scripts/python.exe analysis/models/run_all.py)",
+      "Bash(cd \"/c/Users/david/OneDrive/Skrivebord/Hertie Content/All Repos/Data-Structures-Algorithms/project-bogosort/analysis_and_inference/models\" && ls baseline/outputs/ ensemble/outputs/ lasso_log_reg/outputs/ random_forest/outputs/ svm/outputs/ ridge_log_reg/outputs/)",
+      "Read(//c/c/Users/david/OneDrive/Skrivebord/Hertie Content/All Repos/Data-Structures-Algorithms/project-bogosort/analysis_and_inference/models/baseline/**)",
+      "Bash(/c/venvs/bogosort/Scripts/python.exe analysis_and_inference/models/inference.py)",
+      "Bash(grep -v \"^$\\\\|Generating dense\")",
+      "Bash(cd \"/c/Users/david/OneDrive/Skrivebord/Hertie Content/All Repos/Data-Structures-Algorithms/project-bogosort\" && find analysis_and_inference/models -path \"*evaluation*\" -type f | sort)",
+      "Read(//c/c/Users/david/OneDrive/Skrivebord/Hertie Content/All Repos/Data-Structures-Algorithms/project-bogosort/analysis_and_inference/**)",
+      "Read(//c/c/Users/david/OneDrive/Skrivebord/Hertie Content/All Repos/Data-Structures-Algorithms/**)",
+      "Bash(/c/venvs/bogosort/Scripts/python.exe)",
+      "Bash(/c/venvs/bogosort/Scripts/python.exe analysis_and_inference/models/run_all.py)",
+      "Bash(tee run_log.txt)"
+    ]
+  }
+}
