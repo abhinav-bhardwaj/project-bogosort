@@ -1,3 +1,29 @@
+"""
+baseline.py — random baseline classifier for toxicity detection
+
+This model implements a simple benchmark model using sklearn's DummyClassifier.
+This establishes a minimum performance baseline that all real machine
+learning models in the project should outperform.
+
+This script trains a DummyClassifier using the "stratified" strategy 
+(predictions are generated randomly and class probabilities follow the training 
+label distribution). It produces predictions and probability scores on the test set 
+and evaluates classification performance using the shared evaluator: classification 
+metrics, ROC/PR curves, optional feature importance handling.
+It saves the trained baseline model, the evaluation artifacts, and the output files 
+to the model output directory.
+
+The baseline serves as a reference point for measuring whether more
+advanced models (logistic regression, random forest, XGBoost, etc.)
+actually learn meaningful toxicity patterns beyond random guessing.
+
+Generated artifacts are stored in:
+
+    analysis_and_inference/models/baseline/outputs/
+
+Run with: uv run python analysis_and_inference/models/baseline.py
+"""
+
 import os
 import sys
 

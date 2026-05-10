@@ -1,9 +1,63 @@
 """
-Tests for build_features.py — unit and integration level.
+test_build_features.py — comprehensive unit and integration tests for the 
+feature engineering pipeline in build_features.py
+
+The tests validate the correctness, robustness, and stability of the
+handcrafted NLP feature extraction system used throughout the toxic
+comment classification project.
+
+The tests are divided into two major categories:
+
+1. UNIT TESTS
+
+These tests validate individual helper functions independently to ensure
+that each feature behaves exactly as intended.
+
+Features tested include:
+
+    • Sentiment extraction using VADER
+    • Second-person pronoun detection
+    • Profanity detection
+    • Obfuscated profanity detection (leetspeak)
+    • Slang detection
+    • Uppercase ratio computation
+    • Unique word ratio
+    • Elongated token detection
+    • Consecutive punctuation detection
+    • URL detection
+    • IP address detection
+    • Negation counting
+    • Sentence counting
+    • Average sentence length
+    • Identity-based keyword extraction
+
+The unit tests verify:
+    • correct outputs,
+    • edge-case handling,
+    • empty-string robustness,
+    • case insensitivity,
+    • lexical normalization,
+    • and numerical correctness.
+
+2. INTEGRATION TESTS
+
+These tests validate the behavior of the complete
+DenseFeatureTransformer pipeline.
+
+The integration tests ensure that:
+    • all expected feature columns are generated,
+    • row counts remain unchanged,
+    • original columns are preserved,
+    • no NaN values are introduced,
+    • empty inputs are handled safely,
+    • transformations are deterministic,
+    • and the transformer follows sklearn-compatible behavior.
 
 Run with:
     uv run pytest test/test_build_features.py -v
 """
+
+
 
 import sys
 import os

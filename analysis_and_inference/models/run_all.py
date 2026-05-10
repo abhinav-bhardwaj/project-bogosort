@@ -8,8 +8,7 @@ After this finishes, the following bundles are on disk and ready to use:
     svm/outputs/svm_tuned.pkl
     ensemble/outputs/ensemble_hard_vote_tuned.pkl   ← final classifier
 
-Run with:
-    uv run python analysis_and_inference/models/run_all.py
+Run with: uv run python analysis_and_inference/models/run_all.py
 """
 
 import os

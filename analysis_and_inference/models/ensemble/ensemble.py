@@ -1,3 +1,59 @@
+"""
+ensemble.py — soft-voting ensemble classifier for toxicity detection
+
+The script combines predictions from multiple independently trained classification
+models into a single ensemble using probability-based soft voting.
+
+The ensemble aggregates model confidence scores rather than relying on
+hard majority voting, allowing stronger individual predictions to have
+greater influence on the final toxicity classification.
+
+
+The ensemble intentionally mixes different model families:
+- L1 logistic regression for sparse feature selection,
+- ridge logistic regression for stable linear boundaries,
+- random forest for nonlinear feature interactions.
+
+Using heterogeneous learners improves robustness because each model captures
+different toxicity patterns in the engineered feature space.
+
+Reasoning behind soft voting: 
+Soft voting averages predicted probabilities rather than hard class labels.
+This preserves confidence information and produces smoother decisions on
+ambiguous or borderline toxic comments.
+
+The approach is especially useful for imbalanced toxicity data, where model
+confidence is often more informative than majority agreement alone.
+
+Architectural decisions:
+Models are trained and serialized independently, then loaded dynamically into
+the ensemble. This modular design allows individual models to be:
+- tested separately,
+- replaced easily,
+- added or removed without changing ensemble logic.
+
+A dictionary maps model names to saved pipeline paths because it provides:
+- explicit configuration,
+- constant-time lookup,
+- simple extensibility.
+
+Note: VotingClassifier does not natively support prefit estimators, so fitted
+pipelines are manually injected into the ensemble object. This avoids
+retraining and preserves the exact tuned models used during evaluation.
+
+The ensemble is evaluated with the shared evaluator to ensure metrics remain
+directly comparable with standalone models. Feature importance plots are
+intentionally skipped because a voting ensemble has no single interpretable
+coefficient structure.
+
+Generated artifacts are stored in:
+
+    analysis_and_inference/models/ensemble/outputs/
+
+Run with: uv run python analysis_and_inference/models/ensemble.py
+
+"""
+
 import os
 import sys
 

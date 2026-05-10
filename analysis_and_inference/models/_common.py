@@ -1,4 +1,8 @@
-"""Shared utilities for models.
+"""
+_common.py — shared infrastructure for model training and evaluation
+
+This module centralizes all reusable training logic so individual model files
+remain minimal and focused only on model-specific behavior.
 
 Provides:
 - `find_project_root()`        : depth-independent walk-up to the project root
@@ -13,6 +17,8 @@ Provides:
 Every model file in models/ uses these so the per-model code stays minimal.
 Features are pre-computed once and reused across all models, avoiding redundant
 DenseFeatureTransformer calls during GridSearchCV folds.
+
+Imported internally by all model training scripts.
 """
 
 import os
