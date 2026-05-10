@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Model Evaluation{% endblock %}
+
+{% block head %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block main %}
+<main class="container">
+  <section class="content">
+    <h1>Model Evaluation</h1>
+    <div class="controls">
+      <label for="modelSelect">Model</label>
+      <select id="modelSelect" onchange="loadEvaluation()"></select>
+    </div>
+
+    <h2>Key Metrics</h2>
+    <div class="metric-list" id="metricsGrid"></div>
+
+    <h2>Confusion Matrix</h2>
+    <div id="confusionMatrix"></div>
+
+    <h2>ROC Curve</h2>
+    <div id="rocContainer">
+      <canvas id="rocChart"></canvas>
+    </div>
+
+    <h2>PR Curve</h2>
+    <div id="prContainer">
+      <canvas id="prChart"></canvas>
+    </div>
+
+    <h2>Calibration</h2>
+    <div id="calibrationContainer"></div>
+
+    <h2>Feature Importance</h2>
+    <div id="featureImportanceContainer"></div>
+
+    <h2>Perturbation Importance</h2>
+    <div id="perturbContainer">
+      <canvas id="perturbChart"></canvas>
+    </div>
+
+    <h2>Error Confidence Distribution</h2>
+    <div id="errorConfidenceContainer"></div>
+
+    <h2>Error Patterns by Feature</h2>
+    <div id="errorPatternsContainer"></div>
+    <div id="errorPatternsTable"></div>
+
+    <h2>Sample False Positives</h2>
+    <div id="falsePositives"></div>
+
+    <h2>Sample False Negatives</h2>
+    <div id="falseNegatives"></div>
+
+    <h2>Model Comparison</h2>
+    <div id="compareContainer">
+      <canvas id="compareChart"></canvas>
+    </div>
+  </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+  <script src="/static/js/dashboard.js"></script>
+{% endblock %}
