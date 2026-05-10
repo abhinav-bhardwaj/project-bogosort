@@ -1,3 +1,22 @@
+"""
+article_repository.py - article database and database access layer for storing and retrieving articles and comments
+
+This module implements the application's persistence layer for storing,
+retrieving, updating, and serializing Wikipedia articles and their associated
+toxicity-scored comments using SQLite.
+
+The repository acts as the primary interface between the service layer and
+the database, encapsulating all SQL operations, schema management, and
+serialization logic.
+
+Used by:
+- article_service.py
+- moderation workflows
+- API route handlers
+- dashboard views
+- toxicity explanation services
+"""
+
 import json
 import sqlite3
 import logging

@@ -1,4 +1,14 @@
-"""Smoke test for the LinearSVC pipeline."""
+""" 
+test_svm.py — smoke tests for the LinearSVC pipeline
+
+Verifies that the shared SVM pipeline can:
+- fit successfully on a minimal dataset,
+- generate valid binary predictions,
+- expose a decision_function score array for ranking-based evaluation.
+
+The test checks decision_function instead of predict_proba because
+LinearSVC does not provide calibrated class probabilities.
+"""
 
 import numpy as np
 from sklearn.svm import LinearSVC

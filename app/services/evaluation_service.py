@@ -1,3 +1,19 @@
+"""
+evaluation_service.py - service module for loading model evaluation metadata 
+and serving evaluation artifacts 
+
+This module provides model evaluation retrieval, artifact path resolution, 
+and security validation for the Flask application. It loads evaluation metadata 
+from a JSON file, resolves paths to evaluation artifacts like ROC curves and 
+confusion matrices, and ensures that all file access is securely validated 
+to prevent path traversal attacks.
+
+Used by:
+- api.py
+- model evaluation dashboards
+"""
+
+
 import csv
 import json
 import re

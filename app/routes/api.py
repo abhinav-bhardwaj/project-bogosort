@@ -1,3 +1,22 @@
+"""
+api.py — REST API routes for moderation, evaluation and article management
+
+This module centralizes all HTTP API endpoints behind a single Flask Blueprint.
+Routes delegate business logic to service-layer modules instead of implementing
+database, evaluation, or inference logic directly inside controllers.
+
+This separation keeps routing lightweight and makes services independently testable,
+reusable, and replaceable without changing endpoint structure.
+
+Model artifact access is restricted through allowlists and path validation to
+prevent unsafe filesystem access. All endpoints return structured JSON errors
+instead of exposing internal exceptions directly.
+
+The API layer also isolates Flask-specific request handling from the underlying
+moderation and evaluation pipelines, simplifying future migration to other
+interfaces if needed.
+"""
+
 import logging
 from flask import Blueprint, request, jsonify, abort, send_from_directory
 

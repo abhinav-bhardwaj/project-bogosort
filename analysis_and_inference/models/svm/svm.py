@@ -1,3 +1,25 @@
+"""
+svm.py — linear Support Vector Machine for toxicity classification
+
+This module trains a LinearSVC model on the engineered toxicity features.
+A linear SVM was chosen because it performs well on sparse, high-dimensional
+feature spaces while remaining computationally efficient on large datasets.
+
+
+The model is wrapped in the shared pipeline and grid-search framework so it
+uses identical preprocessing, evaluation, and artifact-saving logic as the
+other classifiers. A small hyperparameter grid over C values controls regularization strength,
+allowing comparison between simpler and more flexible decision boundaries.
+
+Implementation note: 
+LinearSVC does not expose predict_proba(), so evaluation uses the raw
+decision_function output as a ranking score for ROC-AUC and PR-AUC metrics.
+Threshold tuning is skipped automatically because calibrated probabilities
+are unavailable.
+
+Run with: uv run python analysis_and_inference/models/svm/svm.py
+"""
+
 import os
 import sys
 

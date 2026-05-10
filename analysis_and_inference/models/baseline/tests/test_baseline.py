@@ -1,4 +1,16 @@
-"""Smoke test for the baseline DummyClassifier model."""
+"""
+test_baseline.py — smoke tests for the baseline DummyClassifier model
+
+This script validates that the project's baseline classifier can successfully train,
+generate binary toxicity predictions, and output valid probability estimates on a minimal
+test dataset.
+
+Note: These are smoke tests rather than performance tests. The goal is simply
+to confirm that the baseline model pipeline executes correctly and returns
+properly formatted outputs.
+
+Run with: uv run pytest test/test_baseline.py -v
+"""
 
 import numpy as np
 from sklearn.dummy import DummyClassifier

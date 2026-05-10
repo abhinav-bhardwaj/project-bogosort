@@ -1,3 +1,17 @@
+"""
+main.py — core page routes for the Flask frontend
+
+This module defines lightweight navigation routes for the main user-facing
+pages of the application. Routes are intentionally limited to template rendering, while moderation,
+evaluation, and inference logic remain isolated in dedicated service and API
+layers. This separation keeps frontend navigation independent from backend
+processing pipelines.
+
+Dynamic article and comment routes pass identifiers directly into templates
+instead of resolving data server-side. This allows frontend components to fetch
+data asynchronously through the API layer, reducing template complexity and
+improving modularity.
+"""
 from flask import Blueprint, render_template
 
 main = Blueprint("main", __name__)

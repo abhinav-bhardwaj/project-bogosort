@@ -1,4 +1,5 @@
-"""Error-pattern analysis: FP/FN samples, error patterns by feature, confidence distribution.
+"""
+error_analysis.py - error-pattern analysis: FP/FN samples, error patterns by feature, confidence distribution
 
 Run manually for a given model after run_all.py has saved its tuned pipeline:
 
