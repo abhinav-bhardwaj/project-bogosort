@@ -1,4 +1,22 @@
-"""Smoke test for the VotingClassifier prefit hack used by the ensemble."""
+"""
+test_ensemble.py — smoke test for the prefit VotingClassifier ensemble
+
+The production ensemble uses a non-standard sklearn workaround where already-
+trained estimators are manually injected into a VotingClassifier without
+calling fit() again. This avoids redundant retraining, overwriting tuned pipelines, unnecessary computation.
+
+The test uses three deterministic DummyClassifier models so the expected
+majority-vote output is known in advance. This isolates and validates the
+ensemble stitching logic independently from model complexity.
+
+This test confirms that:
+- prefit estimators can be combined successfully,
+- VotingClassifier predictions run without fit(),
+- outputs remain valid binary labels,
+- majority voting behaves correctly.
+
+Run with: uv run pytest test/test_ensemble.py -v
+"""
 
 import numpy as np
 from sklearn.dummy import DummyClassifier

@@ -1,8 +1,15 @@
-"""Post-hoc feature-selection analysis for the tuned Random Forest.
+"""
+feature_selection.py — post-hoc feature-selection analysis for the tuned Random Forest
 
-Loads the saved tuned RF, ranks features by importance, retrains on top-5 / top-10
-subsets, and compares performance against the full feature set. Saves a comparison
-plot and CSV to random_forest/outputs/evaluation/.
+This module evaluates how Random Forest performance changes when training on
+only the most important engineered features. Feature importance rankings are
+used to retrain the model on top-5 and top-10 subsets, allowing comparison
+against the full feature space (using PR-AUC, ROC-AUC, and Macro-F1).
+It saves a comparison plot and CSV to random_forest/outputs/evaluation/.
+
+Note: The analysis reuses the tuned Random Forest configuration to isolate the effect
+of feature selection rather than hyperparameter changes. Feature subsets are represented as ranked index arrays because they allow fast,
+memory-efficient slicing of sparse feature matrices.
 
 Run manually after run_all.py has produced random_forest_tuned.pkl:
     python analysis_and_inference/models/random_forest/feature_selection.py

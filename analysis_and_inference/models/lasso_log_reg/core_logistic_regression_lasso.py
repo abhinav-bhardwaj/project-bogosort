@@ -1,3 +1,25 @@
+"""
+core_logistic_regression_lasso.py — custom implementation of logistic regression with L1 regularization
+
+Custom implementation of L1-regularized logistic regression using gradient
+descent with soft-thresholding. The model follows the sklearn estimator API,
+allowing it to integrate directly into existing pipelines and evaluation code.
+
+L1 regularization was chosen to encourage sparse coefficients, improving
+interpretability and reducing reliance on weak or noisy features. Soft-
+thresholding is used instead of standard gradient descent because the L1 penalty
+is non-differentiable at zero. The implementation also supports optional sample
+weighting, configurable decision thresholds, and convergence diagnostics.
+
+The design intentionally avoids sklearn's built-in LogisticRegression internals
+to expose the optimisation process directly and make each training step
+transparent and independently testable.
+
+Run with: uv run python analysis_and_inference/models/lasso_log_reg/core_logistic_regression_lasso.py
+
+"""
+
+
 import numpy as np
 import warnings 
 from sklearn.base import BaseEstimator, ClassifierMixin
