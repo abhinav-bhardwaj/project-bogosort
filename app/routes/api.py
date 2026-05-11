@@ -267,20 +267,3 @@ def article_comments(article_id):
 @api.route("/articles/<article_id>/comments/<comment_id>", methods=["GET"])
 def comment_detail(article_id, comment_id):
     return jsonify(get_comment_detail(article_id, comment_id))
-
-"""
-@api.route('/predict', methods=['POST'])
-def predict():
-    data = request.json
-    comment_text = data.get("comment_text", "")
-    if not comment_text:
-        return jsonify({"error": "No comment_text provided"}), 400
-    result = get_prediction(comment_text)
-    return jsonify(result)
-
-@api.route('/analysis', methods=['GET'])
-def analysis():
-    query_type = request.args.get('type', 'summary')
-    result = run_analysis_query(query_type)
-    return jsonify(result)
-"""

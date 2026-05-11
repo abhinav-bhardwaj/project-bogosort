@@ -1,0 +1,105 @@
+.confusion-matrix {
+  border-collapse: collapse;
+  width: fit-content;
+  background: var(--wp-card-bg);
+  border: none;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 20px auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.confusion-matrix th,
+.confusion-matrix td {
+  border: 1px solid #e8e8e8;
+  padding: 14px 20px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.confusion-matrix th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-size: 12px;
+}
+
+.confusion-matrix td {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  background: #f8f9fa;
+}
+
+.confusion-matrix th:first-child {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.confusion-matrix tbody tr:hover td {
+  background-color: #eff3f8;
+  transition: background-color 0.25s ease;
+}
+
+.confusion-matrix tbody tr:nth-child(odd) td {
+  background-color: #f5f7fa;
+}
+
+.confusion-matrix tbody tr:nth-child(odd):hover td {
+  background-color: #eff3f8;
+}
+
+.detail-table,
+.queue-table {
+  border-collapse: collapse;
+  width: 100%;
+  background: var(--wp-card-bg);
+  border: 1px solid var(--wp-border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 16px 0;
+  font-size: 13px;
+}
+
+.detail-table th,
+.detail-table td,
+.queue-table th,
+.queue-table td {
+  border: 1px solid var(--wp-border);
+  padding: 8px;
+  text-align: left;
+  font-size: 12px;
+}
+
+.detail-table th,
+.queue-table th {
+  background: var(--wp-accent);
+  font-weight: 700;
+  text-align: center;
+  padding: 8px 6px;
+}
+
+.queue-table tbody tr:hover {
+  background: #f0f0f0;
+}
+
+@media (max-width: 768px) {
+  .confusion-matrix th,
+  .confusion-matrix td {
+    padding: 6px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .confusion-matrix th,
+  .confusion-matrix td,
+  .detail-table th,
+  .detail-table td {
+    padding: 5px;
+    font-size: 10px;
+  }
+}

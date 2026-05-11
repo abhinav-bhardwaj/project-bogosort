@@ -1,0 +1,52 @@
+:root {
+  --wp-bg: #f6f6f6;
+  --wp-border: #a2a9b1;
+  --wp-text: #202122;
+  --wp-link: #0645ad;
+  --wp-link-hover: #3366cc;
+  --wp-link-visited: #0b0080;
+  --wp-muted: #72777d;
+  --wp-header-bg: #ffffff;
+  --wp-card-bg: #ffffff;
+  --wp-accent: #eaecf0;
+  --wp-success: #36c;
+  --wp-warning: #ff6b1b;
+  --wp-danger: #d33;
+  --wp-info: #2a4b8d;
+  --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-medium: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+* { box-sizing: border-box; }
+
+html {
+  font-size: 14px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--wp-bg);
+  color: var(--wp-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--wp-link);
+  text-decoration: none;
+}
+
+a:visited {
+  color: var(--wp-link-visited);
+}
+
+a:hover {
+  color: var(--wp-link-hover);
+  text-decoration: underline;
+}
+
+a:active {
+  color: var(--wp-danger);
+}

@@ -1,0 +1,82 @@
+canvas {
+  width: 100% !important;
+  height: 220px !important;
+  border: 1px solid var(--wp-border);
+  background: var(--wp-card-bg);
+  border-radius: 3px;
+  display: block;
+  max-width: 100%;
+}
+
+canvas#rocChart,
+canvas#prChart,
+canvas#perturbChart,
+canvas#compareChart {
+  height: 200px !important;
+}
+
+.article-card canvas {
+  height: 160px !important;
+  margin: 8px -8px -8px -8px;
+  border: none;
+  border-radius: 0 0 3px 3px;
+}
+
+#rocContainer img,
+#prContainer img,
+#calibrationContainer img,
+#featureImportanceContainer img,
+#errorConfidenceContainer img,
+#errorPatternsContainer img {
+  max-width: 65%;
+  height: auto;
+  display: block;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  margin: 12px auto;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 768px) {
+  canvas {
+    height: 180px !important;
+  }
+
+  canvas#rocChart,
+  canvas#prChart,
+  canvas#perturbChart,
+  canvas#compareChart {
+    height: 160px !important;
+  }
+
+  #rocContainer img,
+  #prContainer img,
+  #calibrationContainer img,
+  #featureImportanceContainer img,
+  #errorConfidenceContainer img,
+  #errorPatternsContainer img {
+    max-width: 60%;
+  }
+}
+
+@media (max-width: 480px) {
+  canvas {
+    height: 150px !important;
+  }
+
+  canvas#rocChart,
+  canvas#prChart,
+  canvas#perturbChart,
+  canvas#compareChart {
+    height: 140px !important;
+  }
+
+  #rocContainer img,
+  #prContainer img,
+  #calibrationContainer img,
+  #featureImportanceContainer img,
+  #errorConfidenceContainer img,
+  #errorPatternsContainer img {
+    max-width: 55%;
+  }
+}

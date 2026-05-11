@@ -65,25 +65,6 @@ def sample_evaluations():
 
 
 @pytest.fixture
-def evaluations_file(tmp_path, sample_evaluations):
-    """Create a temporary evaluations JSON file."""
-    eval_file = tmp_path / "model_evaluations.json"
-    with open(eval_file, "w") as f:
-        json.dump(sample_evaluations, f)
-    return eval_file
-
-
-@pytest.fixture
-def monkeypatch_data_path(monkeypatch, evaluations_file):
-    """Monkeypatch the DATA_PATH in queries module."""
-    monkeypatch.setattr(
-        "app.db.queries.DATA_PATH",
-        evaluations_file
-    )
-    return evaluations_file
-
-
-@pytest.fixture
 def mock_toxic_words():
     """Sample toxic words data for bogosort tests."""
     return [

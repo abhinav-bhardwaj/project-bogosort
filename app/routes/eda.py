@@ -39,7 +39,7 @@ def dashboard():
         return render_template(
             'eda.html',
             eda_json='null',
-            error_message='EDA cache not loaded. Run compute_eda_cache.py first.'
+            error_message='EDA cache not loaded. Run eda_processor.py first.'
         ), 503
 
     return render_template('eda.html', eda_json=json.dumps(data))

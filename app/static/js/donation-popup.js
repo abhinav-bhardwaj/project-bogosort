@@ -200,13 +200,13 @@ if (document.readyState === 'loading') {
     window.donationPopup = new DonationPopup({
       showOnPageChange: true,
       showDelay: 800,
-      dismissDuration: 3600000
+      dismissDuration: 36000
     });
   });
 } else {
   window.donationPopup = new DonationPopup({
     showOnPageChange: true,
     showDelay: 800,
-    dismissDuration: 3600000
+    dismissDuration: 36000
   });
 }

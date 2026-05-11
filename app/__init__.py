@@ -53,4 +53,21 @@ def create_app(config_name=None):
     app.register_blueprint(bogosort_demo, url_prefix='/bogosort')
     app.register_blueprint(eda)
 
+    # Register error handlers
+    @app.errorhandler(404)
+    def not_found(error):
+        from flask import render_template
+        return render_template('error.html',
+                             status_code=404,
+                             error_message='Page Not Found',
+                             error_description='The page you are looking for does not exist.'), 404
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        from flask import render_template
+        return render_template('error.html',
+                             status_code=500,
+                             error_message='Internal Server Error',
+                             error_description='Something went wrong on our end. Please try again later.'), 500
+
     return app

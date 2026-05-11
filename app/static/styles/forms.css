@@ -1,0 +1,149 @@
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field.full {
+  grid-column: 1 / -1;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wp-text);
+}
+
+.field input[type="text"],
+.field input[type="url"],
+.field input[type="number"],
+.field input[type="range"],
+.field select {
+  padding: 8px 10px;
+  border: 1px solid var(--wp-border);
+  border-radius: 3px;
+  background: var(--wp-card-bg);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.field input[type="text"]:focus,
+.field input[type="url"]:focus,
+.field input[type="number"]:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--wp-link);
+  box-shadow: inset 0 0 0 1px var(--wp-link);
+}
+
+.field input[type="range"] {
+  padding: 4px;
+}
+
+.input-panel {
+  padding: 0;
+}
+
+.article-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--wp-border);
+  border-radius: 3px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.article-input:focus {
+  outline: none;
+  border-color: var(--wp-link);
+  box-shadow: inset 0 0 0 1px var(--wp-link);
+}
+
+.input-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.input-row label {
+  font-size: 13px;
+  color: var(--wp-muted);
+  font-weight: 600;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+.controls label {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.controls select {
+  padding: 7px 11px;
+  border: 1px solid var(--wp-border);
+  background: var(--wp-card-bg);
+  border-radius: 3px;
+  font-size: 13px;
+  min-width: 160px;
+}
+
+#ingestStatus {
+  margin-top: 12px;
+}
+
+.status-item {
+  padding: 8px 12px;
+  background: var(--wp-accent);
+  border-left: 3px solid var(--wp-link);
+  margin-bottom: 6px;
+  font-size: 13px;
+  border-radius: 2px;
+}
+
+.status-item.error {
+  background: #fee7e6;
+  border-left-color: var(--wp-danger);
+  color: var(--wp-danger);
+}
+
+.status-item.success {
+  background: #e6f4e6;
+  border-left-color: #006600;
+}
+
+#modelSelect {
+  width: 100%;
+  min-width: 300px;
+  max-width: none;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid var(--wp-border);
+  border-radius: 4px;
+  background: var(--wp-card-bg);
+  box-shadow: var(--shadow-light);
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -14,7 +14,3 @@ def article_page(article_id):
 @main.route("/articles/<article_id>/comments/<comment_id>/")
 def comment_page(article_id, comment_id):
     return render_template("comment.html", article_id=article_id, comment_id=comment_id)
-
-#@main.route("/")
-#def index():
-#    return redirect(url_for("dashboard.dashboard_page"))

@@ -1,9 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>{% block title %}Toxicity ML Wiki{% endblock %}</title>
-  <link rel="stylesheet" href="/static/styles.css">
-  <link rel="stylesheet" href="/static/donation-popup.css">
+  <title>{% block title %}Wiki Toxicity ML{% endblock %}</title>
+  <link rel="stylesheet" href="/static/styles/global.css">
+  <link rel="stylesheet" href="/static/styles/layout.css">
+  <link rel="stylesheet" href="/static/styles/banner.css">
+  <link rel="stylesheet" href="/static/styles/navigation.css">
+  <link rel="stylesheet" href="/static/styles/cards.css">
+  <link rel="stylesheet" href="/static/styles/buttons.css">
+  <link rel="stylesheet" href="/static/styles/forms.css">
+  <link rel="stylesheet" href="/static/styles/tables.css">
+  <link rel="stylesheet" href="/static/styles/charts.css">
+  <link rel="stylesheet" href="/static/styles/article.css">
+  <link rel="stylesheet" href="/static/styles/comments.css">
+  <link rel="stylesheet" href="/static/styles/utilities.css">
+  <link rel="stylesheet" href="/static/styles/donation-popup.css">
   {% block head %}{% endblock %}
 </head>
 <body {% block body_attrs %}{% endblock %}>
@@ -24,12 +35,12 @@
     <div class="topbar-inner">
       <div class="brand">
         <span class="brand-logo">Σ</span>
-        Toxicity ML Wiki
+        Wiki Toxicity ML
       </div>
       <div class="top-links">
-        <a href="/">Main</a>
+        <a href="/">Dashboard</a>
         <a href="/eda/">EDA</a>
-        <a href="/dashboard/">Dashboard</a>
+        <!-- <a href="/dashboard/">Dashboard</a> -->
         <a href="/dashboard/nerdy/">Nerdy</a>
         <a href="/bogosort/">Bogosort</a>
       </div>
