@@ -1,5 +1,5 @@
 *.pkl
 *.npz
-.venv/
+.venv
 __pycache__/
 .ipynb_checkpoints/
