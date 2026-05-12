@@ -49,7 +49,8 @@ def initialize_schema():
                     auto_threshold REAL NOT NULL,
                     manual_threshold REAL NOT NULL,
                     flagged_count INTEGER NOT NULL,
-                    trend_json TEXT NOT NULL
+                    trend_json TEXT NOT NULL,
+                    inference_stats_json TEXT NOT NULL DEFAULT '{}'
                 )
                 """
             )
@@ -58,7 +59,7 @@ def initialize_schema():
                 CREATE TABLE IF NOT EXISTS comments (
                     id TEXT PRIMARY KEY,
                     article_id TEXT NOT NULL,
-                    author TEXT NOT NULL,
+                    author TEXT NOT NULL DEFAULT 'unsigned',
                     timestamp TEXT NOT NULL,
                     text TEXT NOT NULL,
                     toxicity REAL NOT NULL,
@@ -67,9 +68,17 @@ def initialize_schema():
                     top_features_json TEXT NOT NULL,
                     model_version TEXT NOT NULL DEFAULT '',
                     explain_version TEXT NOT NULL DEFAULT '',
+                    inference_ms REAL NOT NULL DEFAULT 0,
                     FOREIGN KEY(article_id) REFERENCES articles(id)
                 )
                 """
+            )
+            _ensure_columns(
+                conn,
+                "articles",
+                [
+                    ("inference_stats_json", "TEXT NOT NULL DEFAULT '{}'"),
+                ],
             )
             _ensure_columns(
                 conn,
@@ -78,6 +87,7 @@ def initialize_schema():
                     ("is_flagged", "INTEGER NOT NULL DEFAULT 0"),
                     ("model_version", "TEXT NOT NULL DEFAULT ''"),
                     ("explain_version", "TEXT NOT NULL DEFAULT ''"),
+                    ("inference_ms", "REAL NOT NULL DEFAULT 0"),
                 ],
             )
             conn.execute("CREATE INDEX IF NOT EXISTS idx_comments_article ON comments(article_id)")
@@ -99,6 +109,11 @@ def serialize_article_summary(row):
         logger.error(f"Corrupted trend JSON for article {row['id']}: {exc}")
         trend = {}
 
+    try:
+        inference_stats = json.loads(row["inference_stats_json"]) if row["inference_stats_json"] else {}
+    except (json.JSONDecodeError, IndexError):
+        inference_stats = {}
+
     return {
         "id": row["id"],
         "title": row["title"],
@@ -109,6 +124,7 @@ def serialize_article_summary(row):
         "manual_threshold": row["manual_threshold"],
         "flagged_count": row["flagged_count"],
         "trend": trend,
+        "inference_stats": inference_stats,
     }
 
 def serialize_comment(row):
@@ -120,7 +136,7 @@ def serialize_comment(row):
 
     return {
         "id": row["id"],
-        "author": row["author"],
+        "author": row["author"] or "unsigned",
         "timestamp": row["timestamp"],
         "text": row["text"],
         "toxicity": row["toxicity"],
@@ -129,6 +145,7 @@ def serialize_comment(row):
         "top_features": top_features,
         "model_version": row["model_version"],
         "explain_version": row["explain_version"],
+        "inference_ms": row["inference_ms"] if row["inference_ms"] else 0.0,
     }
 
 def upsert_article(article, comments):
@@ -137,8 +154,8 @@ def upsert_article(article, comments):
         conn.execute(
             """
             INSERT OR REPLACE INTO articles
-            (id, title, url, summary, created_at, model_name, auto_threshold, manual_threshold, flagged_count, trend_json)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (id, title, url, summary, created_at, model_name, auto_threshold, manual_threshold, flagged_count, trend_json, inference_stats_json)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 article["id"],
@@ -151,6 +168,7 @@ def upsert_article(article, comments):
                 article["manual_threshold"],
                 article["flagged_count"],
                 json.dumps(article["trend"]),
+                json.dumps(article.get("inference_stats", {})),
             ),
         )
         conn.execute("DELETE FROM comments WHERE article_id = ?", (article["id"],))
@@ -158,13 +176,13 @@ def upsert_article(article, comments):
             conn.execute(
                 """
                 INSERT INTO comments
-                (id, article_id, author, timestamp, text, toxicity, decision, is_flagged, top_features_json, model_version, explain_version)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (id, article_id, author, timestamp, text, toxicity, decision, is_flagged, top_features_json, model_version, explain_version, inference_ms)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     c["id"],
                     article["id"],
-                    c["author"],
+                    c["author"] or "unsigned",
                     c["timestamp"],
                     c["text"],
                     c["toxicity"],
@@ -173,6 +191,7 @@ def upsert_article(article, comments):
                     json.dumps(c["top_features"]),
                     c["model_version"],
                     c["explain_version"],
+                    c.get("inference_ms", 0.0),
                 ),
             )
         conn.commit()
@@ -208,6 +227,13 @@ def _comment_order_clause(sort):
         "toxicity_asc": "ORDER BY toxicity ASC",
         "timestamp_desc": "ORDER BY timestamp DESC",
         "timestamp_asc": "ORDER BY timestamp ASC",
+        "decision_asc": (
+            "ORDER BY CASE decision "
+            "WHEN 'auto-ban' THEN 1 "
+            "WHEN 'manual-ban' THEN 2 "
+            "WHEN 'manual-review' THEN 3 "
+            "ELSE 4 END"
+        ),
     }
     return sort_map.get(sort, "ORDER BY toxicity DESC")
 
@@ -251,13 +277,17 @@ def update_thresholds(article_id, auto_threshold, manual_threshold):
     initialize_schema()
     with get_connection() as conn:
         comments = conn.execute(
-            "SELECT id, toxicity FROM comments WHERE article_id = ?",
+            "SELECT id, toxicity, decision FROM comments WHERE article_id = ?",
             (article_id,),
         ).fetchall()
 
         flagged_count = 0
         for row in comments:
             toxicity = row["toxicity"]
+            # Preserve moderator decisions — only recalculate system-assigned ones
+            if row["decision"] == "manual-ban":
+                flagged_count += 1
+                continue
             decision = "none"
             if toxicity >= auto_threshold:
                 decision = "auto-ban"
@@ -306,6 +336,16 @@ def get_comment(article_id, comment_id):
         },
         "comment": serialize_comment(comment),
     }
+
+
+def update_comment_decision(comment_id, decision):
+    initialize_schema()
+    with get_connection() as conn:
+        conn.execute(
+            "UPDATE comments SET decision = ? WHERE id = ?",
+            (decision, comment_id),
+        )
+        conn.commit()
 
 
 def update_comment_explanation(comment_id, top_features, explain_version):

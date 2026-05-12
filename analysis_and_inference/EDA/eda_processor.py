@@ -190,7 +190,7 @@ feature_target_corr = (
 )
 
 eda_cache['feature_target_correlation'] = {
-    col: float(val) for col, val in feature_target_corr.head(15).items()
+    col: float(val) for col, val in feature_target_corr.items()
 }
 
 # Feature means by target class
@@ -211,15 +211,145 @@ eda_cache['feature_means_by_class'] = {
         "toxic": float(feature_means.loc[col, "toxic"]),
         "diff": float(feature_means.loc[col, "toxic_minus_non_toxic"]),
     }
-    for col in feature_means.head(15).index
+    for col in feature_means.index  # all features, not just top 15
 }
 
 print(f"Top correlated features: {list(feature_target_corr.head(5).index)}")
 
 # ============================================================================
-# EDA-5: Modeling Readiness Checklist
+# EDA-5: Identity Risk Analysis
 # ============================================================================
-print("\n=== EDA-5: Modeling Readiness Checklist ===")
+print("\n=== EDA-5: Identity Risk Analysis ===")
+
+TRAIN_FEATURES_PATH = "data/processed/train_set_with_features.csv"
+identity_groups = [
+    ("identity_race",        "Race / Ethnicity"),
+    ("identity_gender",      "Gender"),
+    ("identity_sexuality",   "Sexual Orientation"),
+    ("identity_religion",    "Religion"),
+    ("identity_disability",  "Disability"),
+    ("identity_nationality", "Nationality"),
+]
+
+try:
+    df_full = pd.read_csv(TRAIN_FEATURES_PATH)
+    baseline_tox = float(df_full[TARGET_COLUMN].mean())
+    total_n = len(df_full)
+
+    groups = []
+    for col, label in identity_groups:
+        if col not in df_full.columns:
+            continue
+        mask = df_full[col] == 1
+        count = int(mask.sum())
+        if count == 0:
+            continue
+        tox_rate = float(df_full.loc[mask, TARGET_COLUMN].mean())
+        ih_rate = float(df_full.loc[mask, "identity_hate"].mean()) if "identity_hate" in df_full.columns else 0.0
+        rel_risk = round(tox_rate / baseline_tox, 3) if baseline_tox > 0 else 0.0
+        groups.append({
+            "key": col,
+            "label": label,
+            "count": count,
+            "pct_of_dataset": round(count / total_n * 100, 2),
+            "toxic_rate": round(tox_rate, 4),
+            "relative_risk": rel_risk,
+            "identity_hate_rate": round(ih_rate, 4),
+        })
+
+    any_mask = df_full.get("identity_mention_count", pd.Series(0, index=df_full.index)) > 0
+    any_count = int(any_mask.sum())
+    any_tox = float(df_full.loc[any_mask, TARGET_COLUMN].mean()) if any_count > 0 else 0.0
+    ih_total = int(df_full["identity_hate"].sum()) if "identity_hate" in df_full.columns else 0
+
+    eda_cache["identity_risk"] = {
+        "baseline_toxic_rate": round(baseline_tox, 4),
+        "total_comments": total_n,
+        "any_identity_mention_count": any_count,
+        "any_identity_mention_pct": round(any_count / total_n * 100, 2),
+        "any_identity_mention_toxic_rate": round(any_tox, 4),
+        "identity_hate_total": ih_total,
+        "identity_hate_rate": round(ih_total / total_n, 5) if total_n > 0 else 0.0,
+        "groups": sorted(groups, key=lambda g: g["relative_risk"], reverse=True),
+    }
+    print(f"Identity groups analysed: {len(groups)}")
+    for g in eda_cache["identity_risk"]["groups"]:
+        print(f"  {g['label']}: n={g['count']}, rel_risk={g['relative_risk']}x")
+except Exception as exc:
+    print(f"WARNING: Identity risk analysis skipped: {exc}")
+    eda_cache["identity_risk"] = {}
+
+# ============================================================================
+# EDA-6: Feature-Feature Correlation Matrix
+# ============================================================================
+print("\n=== EDA-6: Feature Correlation Matrix ===")
+
+corr_matrix = (
+    X_train_with_features[numeric_cols]
+    .corr(numeric_only=True)
+    .values
+    .round(4)
+    .tolist()
+)
+
+eda_cache['feature_correlation_matrix'] = {
+    'features': numeric_cols,
+    'matrix': corr_matrix,
+}
+print(f"Correlation matrix: {len(numeric_cols)}×{len(numeric_cols)}")
+
+# ============================================================================
+# EDA-7: Feature Distributions (per-class histogram densities)
+# ============================================================================
+print("\n=== EDA-7: Feature Distributions ===")
+
+BINARY_FEATURES = {
+    'vader_is_negative', 'has_second_person', 'has_url_or_ip',
+    'identity_race', 'identity_gender', 'identity_sexuality',
+    'identity_religion', 'identity_disability', 'identity_nationality',
+}
+
+non_toxic_mask = X_train_with_features[TARGET_COLUMN] == 0
+toxic_mask     = X_train_with_features[TARGET_COLUMN] == 1
+nt_total = non_toxic_mask.sum()
+t_total  = toxic_mask.sum()
+
+feature_distributions = {}
+for feat in numeric_cols:
+    vals_all = X_train_with_features[feat].values.astype(float)
+    vals_nt  = X_train_with_features.loc[non_toxic_mask, feat].values.astype(float)
+    vals_t   = X_train_with_features.loc[toxic_mask,     feat].values.astype(float)
+
+    if feat in BINARY_FEATURES:
+        edges = np.array([-0.5, 0.5, 1.5])
+    else:
+        lo = float(np.percentile(vals_all, 1))
+        hi = float(np.percentile(vals_all, 99))
+        if hi <= lo:
+            hi = lo + 1.0
+        edges = np.linspace(lo, hi, 31)  # 30 bins
+
+    cnt_nt, _ = np.histogram(vals_nt, bins=edges)
+    cnt_t,  _ = np.histogram(vals_t,  bins=edges)
+
+    # Density: fraction of each class (%) so imbalanced classes compare fairly
+    density_nt = (cnt_nt / nt_total * 100).round(4).tolist()
+    density_t  = (cnt_t  / t_total  * 100).round(4).tolist()
+
+    feature_distributions[feat] = {
+        'bin_edges': [round(float(e), 6) for e in edges],
+        'non_toxic': density_nt,
+        'toxic':     density_t,
+        'is_binary': feat in BINARY_FEATURES,
+    }
+
+eda_cache['feature_distributions'] = feature_distributions
+print(f"Distributions computed for {len(feature_distributions)} features")
+
+# ============================================================================
+# EDA-8: Modeling Readiness Checklist
+# ============================================================================
+print("\n=== EDA-8: Modeling Readiness Checklist ===")
 
 readiness = {
     "split_fixed_and_leakage_safe": True,

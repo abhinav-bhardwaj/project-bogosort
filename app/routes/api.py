@@ -10,6 +10,7 @@ from app.services.article_service import (
     ingest_article,
     list_articles,
     list_comments,
+    update_comment_decision,
     update_thresholds,
 )
 
@@ -34,8 +35,8 @@ MAX_THRESHOLD = 1.0
 DEFAULT_AUTO_THRESHOLD = 0.75
 DEFAULT_MANUAL_THRESHOLD = 0.55
 MAX_OFFSET = 1000000
-VALID_DECISIONS = {"auto-ban", "manual-review", "none", "flagged"}
-VALID_SORTS = {"toxicity_desc", "toxicity_asc", "timestamp_desc", "timestamp_asc"}
+VALID_DECISIONS = {"auto-ban", "manual-ban", "manual-review", "none", "flagged"}
+VALID_SORTS = {"toxicity_desc", "toxicity_asc", "timestamp_desc", "timestamp_asc", "decision_asc"}
 
 def _parse_int(value, default, min_value, max_value, field_name):
     if value is None or value == "":
@@ -267,3 +268,13 @@ def article_comments(article_id):
 @api.route("/articles/<article_id>/comments/<comment_id>", methods=["GET"])
 def comment_detail(article_id, comment_id):
     return jsonify(get_comment_detail(article_id, comment_id))
+
+
+@api.route("/articles/<article_id>/comments/<comment_id>", methods=["PATCH"])
+def update_comment(article_id, comment_id):
+    payload = request.get_json() or {}
+    decision = payload.get("decision", "").strip()
+    if decision not in VALID_DECISIONS:
+        return jsonify({"error": f"decision must be one of {sorted(VALID_DECISIONS)}"}), 400
+    update_comment_decision(article_id, comment_id, decision)
+    return jsonify({"status": "ok", "decision": decision})

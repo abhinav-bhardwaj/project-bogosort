@@ -50,7 +50,7 @@ def create_app(config_name=None):
     app.register_blueprint(main)
     app.register_blueprint(api, url_prefix='/api')
     app.register_blueprint(dashboard, url_prefix='/dashboard')
-    app.register_blueprint(bogosort_demo, url_prefix='/bogosort')
+    app.register_blueprint(bogosort_demo, url_prefix='/sort-demo')
     app.register_blueprint(eda)
 
     # Register error handlers

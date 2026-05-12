@@ -8,7 +8,7 @@ from app.services.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
 
-bogosort_demo = Blueprint('bogosort', __name__, url_prefix='/bogosort')
+bogosort_demo = Blueprint('bogosort', __name__, url_prefix='/sort-demo')
 
 session_manager = SessionManager(timeout_minutes=30)
 sorting_threads = {}
@@ -114,7 +114,7 @@ def handle_get():
     if state == 'running':
         # Sorting is in progress - show spinner only
         return render_template(
-            'bogosort.html',
+            'sort-demo.html',
             dist_url=dist_url,
             gif_url=gif_url,
             show_form=False,
@@ -127,7 +127,7 @@ def handle_get():
     elif state == 'done':
         # Sorting completed - show GIF and results
         return render_template(
-            'bogosort.html',
+            'sort-demo.html',
             dist_url=dist_url,
             gif_url=gif_url,
             show_form=False,
@@ -142,7 +142,7 @@ def handle_get():
     elif state == 'error':
         # Error occurred - show form with error message
         return render_template(
-            'bogosort.html',
+            'sort-demo.html',
             dist_url=dist_url,
             gif_url=gif_url,
             show_form=True,
@@ -160,7 +160,7 @@ def handle_get():
             SortingService.save_distribution_plot(words, counts, 'app/static/word_distribution.png')
         except Exception as e:
             return render_template(
-                'bogosort.html',
+                'sort-demo.html',
                 dist_url=dist_url,
                 gif_url=gif_url,
                 show_form=True,
@@ -172,7 +172,7 @@ def handle_get():
             )
 
         return render_template(
-            'bogosort.html',
+            'sort-demo.html',
             dist_url=dist_url,
             gif_url=gif_url,
             show_form=True,

@@ -61,6 +61,7 @@ def ingest_article(url, limit=30, auto_threshold=0.75, manual_threshold=0.55, mo
         except (TypeError, ValueError) as exc:
             logger.error(f"Invalid toxicity probability: {prob}", exc_info=True)
             toxicity = 0.0
+        inference_ms = result.get("inference_ms", 0.0)
         running += toxicity
 
         timestamp = c.get("timestamp", "")
@@ -79,7 +80,7 @@ def ingest_article(url, limit=30, auto_threshold=0.75, manual_threshold=0.55, mo
         comments.append(
             {
                 "id": comment_id,
-                "author": c.get("author", "Unknown"),
+                "author": c.get("author") or "unsigned",
                 "timestamp": timestamp,
                 "text": comment_text,
                 "toxicity": toxicity,
@@ -88,12 +89,22 @@ def ingest_article(url, limit=30, auto_threshold=0.75, manual_threshold=0.55, mo
                 "top_features": result.get("top_features", []),
                 "model_version": model_version,
                 "explain_version": result.get("explain_version", ""),
+                "inference_ms": inference_ms,
             }
         )
 
     trend = {"dates": trend_dates, "scores": trend_scores, "threshold": manual_threshold}
     flagged_count = sum(1 for c in comments if c["is_flagged"])
-    logger.info(f"Scored {len(comments)} comments, flagged {flagged_count}")
+
+    inference_times = [c["inference_ms"] for c in comments if c["inference_ms"] > 0]
+    inference_stats = {
+        "count": len(inference_times),
+        "total_ms": round(sum(inference_times), 1),
+        "avg_ms": round(sum(inference_times) / len(inference_times), 1) if inference_times else 0.0,
+        "min_ms": round(min(inference_times), 1) if inference_times else 0.0,
+        "max_ms": round(max(inference_times), 1) if inference_times else 0.0,
+    }
+    logger.info(f"Scored {len(comments)} comments, flagged {flagged_count}, avg inference {inference_stats['avg_ms']}ms")
 
     article_repository.upsert_article(
         {
@@ -107,6 +118,7 @@ def ingest_article(url, limit=30, auto_threshold=0.75, manual_threshold=0.55, mo
             "manual_threshold": manual_threshold,
             "flagged_count": flagged_count,
             "trend": trend,
+            "inference_stats": inference_stats,
         },
         comments,
     )
@@ -131,6 +143,10 @@ def list_comments(article_id, limit=50, offset=0, decision=None, sort="toxicity_
 
 def update_thresholds(article_id, auto_threshold, manual_threshold):
     article_repository.update_thresholds(article_id, auto_threshold, manual_threshold)
+
+
+def update_comment_decision(article_id, comment_id, decision):
+    article_repository.update_comment_decision(comment_id, decision)
 
 
 def get_comment_detail(article_id, comment_id):
