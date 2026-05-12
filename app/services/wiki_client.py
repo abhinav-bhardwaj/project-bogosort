@@ -1,3 +1,19 @@
+"""
+wiki_client.py - service module for interacting with Wikipedia APIs and talk-page
+comment retrieval systems
+
+This module provides Wikipedia URL validation, article title extraction, article 
+metadata retrieval, talk-page comment fetching, and external API communication helpers. 
+
+The module integrates:
+- MediaWiki API requests
+- WikipediaTalkFetcher-based comment extraction
+
+Used by:
+- article_service.py
+- ingestion API routes
+"""
+
 from urllib.parse import urlparse, unquote
 import re
 import html

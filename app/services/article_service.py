@@ -1,3 +1,23 @@
+"""
+article_service.py - service layer for Wikipedia article ingestion and toxicity analysis
+
+This module coordinates:
+- Wikipedia metadata retrieval
+- talk-page comment collection
+- toxicity scoring and explanation generation
+- moderation decision assignment
+- article persistence and retrieval
+- threshold management
+
+It fetches article metadata, retrieves talk-page comments, scores them for toxicity,
+assigns moderation decisions, and stores the article and comment data.
+
+Used by:
+- api.py
+- article repository layer
+- toxicity inference services
+"""
+
 import hashlib
 import logging
 from datetime import datetime

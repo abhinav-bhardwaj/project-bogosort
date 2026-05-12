@@ -1,5 +1,21 @@
 """
-Quick sanity check for build_features.py.
+This code executes a quick end-to-end sanity check on the dense feature engineering
+pipeline implemented in build_features.py. The script validates that:
+
+1. The transformer runs successfully on real Jigsaw toxicity data.
+2. Feature generation produces the expected output shape and columns.
+3. Runtime performance is acceptable on a small representative sample.
+4. Individual engineered features behave plausibly on hand-written examples.
+
+Spot-check examples verify behavior for:
+- highly toxic text,
+- neutral/non-toxic text,
+- slang + profanity-heavy text.
+
+Note: This is not a formal unit test suite. Instead, it acts as a fast diagnostic
+tool for debugging feature engineering logic during development before
+running full model training or pytest-based validation.
+
 Run with: uv run python analysis_and_inference/features/sanity_check.py
 """
 

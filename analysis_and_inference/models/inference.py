@@ -1,5 +1,8 @@
-"""Single-comment inference utility for the Flask app.
+"""
+inference.py — single-comment inference utility for the Flask app
 
+This module provides a lightweight inference layer for the Flask application,
+allowing trained toxicity models to classify individual comments in real time. 
 Usage:
     from analysis_and_inference.models.inference import predict_comment
     result = predict_comment("you are a complete idiot")
@@ -15,6 +18,16 @@ Usage:
 The model, scaler, and SHAP explainer are loaded once at first call and
 cached for all subsequent requests, so Flask pays the one-time setup cost
 only at startup.
+
+The module returns both predictions and feature-level SHAP contributions so
+users can understand which engineered signals influenced toxicity decisions.
+
+Top features are ranked by absolute SHAP magnitude, making explanations easier
+to interpret for borderline or ambiguous comments.
+
+Implementation note: SHAP outputs vary across versions and model types, so _shap_for_class_1()
+normalizes the output structure into a consistent 1D feature contribution array.
+
 """
 
 import os

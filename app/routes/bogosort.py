@@ -1,3 +1,18 @@
+"""
+bogosort.py — interactive sorting-demo routes for the Flask app
+
+This module provides a visual demonstration of Bogosort and MergeSort using
+Flask routes backed by asynchronous background workers.
+
+Sorting execution is separated from request handling so expensive animations do
+not block the web server thread. This keeps the UI responsive while long-running
+sorts execute independently.
+
+The module intentionally contrasts Bogosort against MergeSort to demonstrate
+algorithmic complexity differences visually rather than only theoretically. 
+It also reveals a time processing difference. 
+"""
+
 from flask import Blueprint, redirect, render_template, url_for, request, session
 import threading
 import time

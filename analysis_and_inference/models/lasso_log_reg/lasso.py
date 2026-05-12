@@ -1,3 +1,19 @@
+"""
+lasso.py — training entry point for custom L1 logistic regression
+
+This module trains the project's from-scratch L1-regularized logistic
+regression model using shared preprocessing and evaluation utilities.
+L1 regularization was chosen to encourage sparse feature weights, making the
+model more interpretable and reducing dependence on weak engineered features.
+
+Training logic is delegated to the shared run_grid_search utility such that tuning,
+evaluation, serialization, and reporting remain consistent across all models.
+Hyperparameters are defined in a small search grid to balance optimisation
+quality with computational cost during experimentation.
+
+Run with: uv run python analysis_and_inference/models/lasso_log_reg/lasso.py
+"""
+
 import os
 import sys
 

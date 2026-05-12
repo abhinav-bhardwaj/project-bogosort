@@ -1,11 +1,17 @@
-"""One-time data prep for models.
+"""
+prepare_split.py — deterministic train/test split preparation for toxicity models
 
 Reads the raw zipped Jigsaw CSV, keeps only `comment_text` and `toxic`,
 makes a stratified 80/20 split, and saves it to disk so every model
 loads the exact same X_train/X_test/y_train/y_test.
 
-Run with:
-    uv run python analysis_and_inference/models/split_and_features/prepare_split.py
+Why stratified splitting? The Jigsaw dataset is class-imbalanced, with toxic comments representing a
+minority class. Stratified sampling preserves the original class distribution
+in both train and test sets, reducing evaluation variance and preventing
+misleading performance estimates.
+
+
+Run with: uv run python analysis_and_inference/models/split_and_features/prepare_split.py
 """
 
 import os

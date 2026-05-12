@@ -6,7 +6,7 @@ transformer that produces ~32 lexicon- and regex-based features per comment. Sta
 fit() does nothing, every feature is computed from a single row's text.
 
 Feature outputs
----------------
+
   1.  Sentiment      vader_compound, vader_neg, vader_pos,
                      vader_is_negative, vader_intensity, vader_pos_minus_neg
   2.  Second-person  has_second_person, second_person_count, second_person_density

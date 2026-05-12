@@ -1,3 +1,19 @@
+"""
+toxicity_service.py - service module for toxicity inference and explanation generation
+
+This module provides toxicity prediction wrappers, model inference timing, explanation 
+feature extraction, standardized inference outputs,and inference error handling.
+
+The service acts as an abstraction layer over the model inference
+pipeline located in:
+    analysis_and_inference.models.inference
+
+Used by:
+- article_service.py
+- moderation workflows
+- API endpoints
+"""
+
 import logging
 import time
 from analysis_and_inference.models.inference import predict_comment
