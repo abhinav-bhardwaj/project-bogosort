@@ -5,10 +5,28 @@
 {% block head %}
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <link rel="stylesheet" href="/static/styles/eda.css">
+<link rel="stylesheet" href="/static/styles/outline-nav.css">
 {% endblock %}
 
 {% block main %}
-<main class="eda-container">
+<main class="eda-layout">
+
+  <!-- Sidebar outline nav -->
+  <nav class="outline-nav" id="edaOutline" aria-label="Page outline">
+    <div class="outline-nav-title">On this page</div>
+    <ul>
+      <li><a href="#overview-section">Data Overview</a></li>
+      <li><a href="#distribution-section">Class Distribution</a></li>
+      <li><a href="#top-features-section">Top Features</a></li>
+      <li><a href="#feature-means-section">Feature Means</a></li>
+      <li><a href="#feature-occurrence-section">Feature Occurrence</a></li>
+      <li><a href="#split-validation-section">Train-Test Split</a></li>
+      <li><a href="#feature-explorer-section">Feature Explorer</a></li>
+    </ul>
+  </nav>
+
+  <!-- Main content -->
+  <div class="eda-container">
     {% if error_message %}
     <div class="eda-error">
         <strong>⚠ Unable to load EDA Dashboard</strong>
@@ -62,11 +80,21 @@
         <div id="feature-occurrence-table" class="chart"></div>
     </section>
 
-    <!-- SECTION 7: Train-Test Split Validation -->
+    <!-- SECTION 6: Train-Test Split Validation -->
     <section id="split-validation-section">
         <h2>Train-Test Split Validation</h2>
         <p>Verification that the split is representative and leakage-safe:</p>
         <div id="split-validation-table" class="chart"></div>
+    </section>
+
+    <!-- SECTION 7: Feature Explorer -->
+    <section id="feature-explorer-section">
+        <h2>Feature Explorer</h2>
+        <div class="insight-box">
+            <strong>What this shows:</strong> All engineered features in one place — search by name,
+            sort by correlation or class difference, and click any row to see a class-comparison chart.
+        </div>
+        <div id="feature-explorer-table"></div>
     </section>
 
     <footer class="eda-footer" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #999;">
@@ -74,6 +102,8 @@
     </footer>
 
     {% endif %}
+  </div><!-- /.eda-container -->
+
 </main>
 {% endblock %}
 
@@ -81,7 +111,7 @@
 <script>
     // Expose EDA data to global scope for eda.js
     window.edaData = {{ eda_json | safe }};
-
 </script>
 <script src="/static/js/eda.js"></script>
+<script src="/static/js/outline-nav.js"></script>
 {% endblock %}

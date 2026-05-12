@@ -1,55 +1,120 @@
-.confusion-matrix {
-  border-collapse: collapse;
-  width: fit-content;
-  background: var(--wp-card-bg);
-  border: none;
-  border-radius: 8px;
-  overflow: hidden;
-  margin: 20px auto;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+/* ── Confusion matrix heatmap ─────────────────────────────────────────── */
+.cm-wrap {
+  margin: 12px 0 20px;
 }
 
-.confusion-matrix th,
-.confusion-matrix td {
-  border: 1px solid #e8e8e8;
-  padding: 14px 20px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.confusion-matrix th {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+.cm-col-label {
+  text-align: left;
+  padding-left: 130px; /* align with data columns */
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.5px;
+  color: var(--wp-muted);
+  margin-bottom: 3px;
+}
+
+.confusion-matrix {
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0;
+  width: auto;
+}
+
+.cm-corner {
+  background: transparent !important;
+  border: none !important;
+}
+
+.cm-col-head {
+  background: var(--wp-accent);
+  border: 1px solid var(--wp-border);
+  padding: 7px 20px;
+  text-align: center;
   font-size: 12px;
+  font-weight: 700;
+  color: var(--wp-text);
 }
 
-.confusion-matrix td {
-  font-size: 16px;
-  font-weight: 600;
-  color: #2c3e50;
-  background: #f8f9fa;
+.cm-row-head {
+  background: var(--wp-accent);
+  border: 1px solid var(--wp-border);
+  padding: 8px 12px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--wp-text);
+  white-space: nowrap;
 }
 
-.confusion-matrix th:first-child {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+.cm-row-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--wp-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-.confusion-matrix tbody tr:hover td {
-  background-color: #eff3f8;
-  transition: background-color 0.25s ease;
+.cm-cell {
+  width: 130px;
+  height: 80px;
+  text-align: center;
+  vertical-align: middle;
+  padding: 10px 14px;
+  border: 2px solid white;
+  cursor: default;
+  transition: filter 0.15s;
 }
 
-.confusion-matrix tbody tr:nth-child(odd) td {
-  background-color: #f5f7fa;
+.cm-cell:hover {
+  filter: brightness(0.9);
 }
 
-.confusion-matrix tbody tr:nth-child(odd):hover td {
-  background-color: #eff3f8;
+.cm-pct {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.cm-count {
+  font-size: 11px;
+  opacity: 0.72;
+  margin-top: 3px;
+}
+
+.cm-note {
+  font-size: 11px;
+  color: var(--wp-muted);
+  font-style: italic;
+  margin: 8px 0 6px;
+}
+
+.cm-legend {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--wp-text);
+}
+
+.cm-leg-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cm-leg-swatch {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .cm-cell { width: 90px; height: 64px; }
+  .cm-pct { font-size: 16px; }
+  .cm-col-label { padding-left: 90px; }
 }
 
 .detail-table,

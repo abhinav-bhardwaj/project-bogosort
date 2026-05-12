@@ -12,43 +12,100 @@
 
     <section class="card form-card">
       <form id="articleForm" class="form-grid">
+
+        <!-- URL input -->
         <div class="field full">
           <label for="articleUrl">Wikipedia URL</label>
           <input id="articleUrl" type="url" placeholder="https://en.wikipedia.org/wiki/Hertie_School" />
         </div>
         <div id="articleInputs" class="field full"></div>
 
+        <!-- Comments limit -->
         <div class="field">
-          <label for="limit">Comments</label>
+          <label for="limit">Comments to fetch</label>
           <input id="limit" type="number" value="30" min="1" />
         </div>
 
-        <div class="field">
-          <label for="autoThreshold">Auto‑ban <strong id="autoThresholdValue">0.75</strong></label>
-          <input id="autoThreshold" type="range" min="0" max="1" step="0.01" value="0.75" />
-        </div>
-
-        <div class="field">
-          <label for="manualThreshold">Review <strong id="manualThresholdValue">0.55</strong></label>
-          <input id="manualThreshold" type="range" min="0" max="1" step="0.01" value="0.55" />
-        </div>
-
-        <div class="field">
-          <label for="modelSelect">Model</label>
+        <!-- Model selector -->
+        <div class="field model-field">
+          <label for="modelSelect">Classification model</label>
           <select id="modelSelect"></select>
+          <div id="modelInfoPanel" class="model-info-panel" hidden>
+            <span id="modelInfoText" class="model-info-text"></span>
+          </div>
         </div>
 
-        <div class="actions full">
-          <button id="addInput" type="button" class="btn secondary">Add more</button>
-          <button type="submit" class="btn primary">Analyze Comments</button>
+        <!-- Thresholds -->
+        <div class="field full" id="thresholdSection">
+          <div class="threshold-header">
+            <span class="threshold-label-title">Toxicity thresholds</span>
+            <span class="threshold-label-hint">
+              Each comment gets a score from 0 (safe) to 1 (toxic).
+              The thresholds below decide what happens to it.
+            </span>
+          </div>
+
+          <div class="threshold-zone-wrap">
+            <div class="threshold-zone-bar" id="thresholdZoneBar">
+              <div class="tz-safe"   id="tzSafe"></div>
+              <div class="tz-review" id="tzReview"></div>
+              <div class="tz-ban"    id="tzBan"></div>
+            </div>
+            <div class="tz-labels">
+              <span>0 — safe</span>
+              <span id="tzReviewLabel">0.55 review</span>
+              <span id="tzBanLabel">0.75 auto-ban</span>
+              <span>1</span>
+            </div>
+          </div>
+
+          <div class="threshold-sliders">
+            <div class="field">
+              <label for="manualThreshold">
+                Review if score ≥ <strong id="manualThresholdValue">0.55</strong>
+              </label>
+              <input id="manualThreshold" type="range" min="0" max="1" step="0.01" value="0.55" />
+              <span class="field-hint">Flagged for a human moderator to decide.</span>
+            </div>
+            <div class="field">
+              <label for="autoThreshold">
+                Auto-ban if score ≥ <strong id="autoThresholdValue">0.75</strong>
+              </label>
+              <input id="autoThreshold" type="range" min="0" max="1" step="0.01" value="0.75" />
+              <span class="field-hint">Automatically removed without human review.</span>
+            </div>
+          </div>
+
+          <div id="svmThresholdNote" class="svm-note" hidden>
+            <span class="svm-note-icon">ⓘ</span>
+            <span>SVM predicts a hard 0/1 class label — not a probability score.
+              Threshold sliders have no effect and are disabled while SVM is selected.</span>
+          </div>
         </div>
+
+        <!-- Actions -->
+        <div class="actions full">
+          <button id="addInput" type="button" class="btn secondary">+ Add URL</button>
+          <button type="submit" class="btn primary" id="analyzeBtn">Analyse Comments</button>
+        </div>
+
+        <!-- Status / progress -->
         <div class="field full" id="ingestStatus" aria-live="polite"></div>
+
+        <!-- Success banner (hidden until analysis done) -->
+        <div id="analysisBanner" hidden>
+          <div class="analysis-success">
+            <span class="analysis-success-icon">✓</span>
+            <span id="analysisBannerText"></span>
+            <span class="analysis-success-scroll">↓ scroll to see results</span>
+          </div>
+        </div>
       </form>
     </section>
 
     <section class="section-title">
       <h2>Additive Toxicity Trend by Article</h2>
-      <p class="muted">Threshold for flags: <span id="thresholdLabel">0.55</span></p>
+      <p class="muted">Review threshold: <span id="thresholdLabel">0.55</span></p>
     </section>
 
     <section id="articlesGrid" class="article-grid"></section>

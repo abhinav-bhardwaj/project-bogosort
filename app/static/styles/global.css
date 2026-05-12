@@ -19,6 +19,8 @@
 
 * { box-sizing: border-box; }
 
+[hidden] { display: none !important; }
+
 html {
   font-size: 14px;
 }

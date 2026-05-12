@@ -88,32 +88,72 @@ function renderMetrics(metrics) {
 function renderConfusionMatrix(matrixPayload) {
   const container = document.getElementById("confusionMatrix");
   if (!container) return;
-  
+
   if (!matrixPayload || (Array.isArray(matrixPayload) && matrixPayload.length === 0)) {
     container.innerHTML = "<p>No confusion matrix available.</p>";
     return;
   }
 
-  let labels = ["Pred 0", "Pred 1"];
-  let matrix = matrixPayload;
+  let matrix = Array.isArray(matrixPayload) ? matrixPayload : (matrixPayload.matrix || []);
 
-  if (!Array.isArray(matrixPayload)) {
-    labels = matrixPayload.labels || labels;
-    matrix = matrixPayload.matrix || [];
-  }
-
-  if (!matrix || matrix.length === 0 || !matrix[0] || !matrix[1]) {
+  if (!matrix || matrix.length < 2 || !matrix[0] || !matrix[1]) {
     container.innerHTML = "<p>No confusion matrix available.</p>";
     return;
   }
 
-  let html = '<table class="confusion-matrix"><thead><tr><th></th>';
-  html += `<th>${labels[0]}</th><th>${labels[1]}</th></tr></thead><tbody>`;
-  html += `<tr><th>${labels[0]}</th><td>${matrix[0][0] || 0}</td><td>${matrix[0][1] || 0}</td></tr>`;
-  html += `<tr><th>${labels[1]}</th><td>${matrix[1][0] || 0}</td><td>${matrix[1][1] || 0}</td></tr>`;
-  html += "</tbody></table>";
+  const tn = matrix[0][0] || 0;
+  const fp = matrix[0][1] || 0;
+  const fn = matrix[1][0] || 0;
+  const tp = matrix[1][1] || 0;
 
-  container.innerHTML = html;
+  // Row-normalised percentages (% of each actual class correctly/incorrectly classified)
+  const row0 = tn + fp;
+  const row1 = fn + tp;
+  const tnPct = row0 > 0 ? (tn / row0) * 100 : 0;
+  const fpPct = row0 > 0 ? (fp / row0) * 100 : 0;
+  const fnPct = row1 > 0 ? (fn / row1) * 100 : 0;
+  const tpPct = row1 > 0 ? (tp / row1) * 100 : 0;
+
+  function cell(count, pct, good, tooltip) {
+    const alpha = (pct / 100) * 0.85;
+    const bg = good ? `rgba(51,102,204,${alpha})` : `rgba(211,51,51,${alpha})`;
+    const fg = pct > 55 ? "white" : "var(--wp-text)";
+    return `<td class="cm-cell" style="background:${bg};color:${fg}" title="${tooltip}">
+      <div class="cm-pct">${pct.toFixed(1)}%</div>
+      <div class="cm-count">${count.toLocaleString()}</div>
+    </td>`;
+  }
+
+  container.innerHTML = `
+    <div class="cm-wrap">
+      <div class="cm-col-label">Predicted →</div>
+      <table class="confusion-matrix">
+        <thead>
+          <tr>
+            <th class="cm-corner"></th>
+            <th class="cm-col-head">Non-toxic</th>
+            <th class="cm-col-head">Toxic</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th class="cm-row-head"><span class="cm-row-label">Actual</span>Non-toxic</th>
+            ${cell(tn, tnPct, true,  "True Negative — correctly kept as non-toxic")}
+            ${cell(fp, fpPct, false, "False Positive — non-toxic comment wrongly flagged")}
+          </tr>
+          <tr>
+            <th class="cm-row-head"><span class="cm-row-label">Actual</span>Toxic</th>
+            ${cell(fn, fnPct, false, "False Negative — toxic comment missed by model")}
+            ${cell(tp, tpPct, true,  "True Positive — correctly identified as toxic")}
+          </tr>
+        </tbody>
+      </table>
+      <p class="cm-note">Percentages are row-normalised (share of each actual class). Raw counts shown below each value.</p>
+      <div class="cm-legend">
+        <span class="cm-leg-item"><span class="cm-leg-swatch" style="background:rgba(51,102,204,0.72)"></span>Correct predictions</span>
+        <span class="cm-leg-item"><span class="cm-leg-swatch" style="background:rgba(211,51,51,0.72)"></span>Errors</span>
+      </div>
+    </div>`;
 }
 
 function renderRoc(curve, imageUrl) {

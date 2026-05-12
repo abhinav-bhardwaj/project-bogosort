@@ -19,6 +19,7 @@ function initializeDashboard(data) {
     renderFeatureOccurrence(data);
     renderSplitValidation(data);
     renderReadinessChecklist(data);
+    renderFeatureExplorer(data);
 }
 
 function renderOverview(data) {
@@ -198,7 +199,186 @@ function renderSplitValidation(data) {
     document.getElementById('split-validation-table').innerHTML = html;
 }
 
+function renderFeatureExplorer(data) {
+    const container = document.getElementById('feature-explorer-table');
+    if (!container) return;
+
+    const corr = data.feature_target_correlation || {};
+    const means = data.feature_means_by_class || {};
+    const occ = data.feature_occurrence || {};
+
+    // Union all feature keys across every data section
+    const allNames = [...new Set([
+        ...Object.keys(corr),
+        ...Object.keys(means),
+        ...Object.keys(occ.non_zero_pct || {}),
+    ])].sort();
+
+    const features = allNames.map(name => ({
+        name,
+        correlation: corr[name] || 0,
+        nonToxicMean: means[name]?.non_toxic ?? null,
+        toxicMean:    means[name]?.toxic    ?? null,
+        diff:         means[name]?.diff     ?? null,
+        occPct:       occ.non_zero_pct?.[name]           ?? null,
+        occToxicPct:  occ.non_zero_pct_toxic?.[name]     ?? null,
+        occNonToxicPct: occ.non_zero_pct_non_toxic?.[name] ?? null,
+    }));
+
+    const maxCorr = Math.max(...features.map(f => Math.abs(f.correlation)));
+    const maxDiff = Math.max(...features.map(f => Math.abs(f.diff ?? 0)));
+
+    let sortKey = 'correlation';
+    let sortDir = -1; // -1 = descending
+    let filterText = '';
+
+    function sortVal(f) {
+        if (sortKey === 'name')        return f.name;
+        if (sortKey === 'correlation') return Math.abs(f.correlation);
+        if (sortKey === 'diff')        return Math.abs(f.diff ?? 0);
+        if (sortKey === 'occ')         return f.occPct ?? 0;
+        return 0;
+    }
+
+    function inlineBar(pct, color) {
+        return `<div class="fe-bar" style="width:${pct.toFixed(1)}%;background:${color}"></div>`;
+    }
+
+    function renderTable() {
+        const filtered = features.filter(f =>
+            f.name.toLowerCase().includes(filterText.toLowerCase())
+        );
+        const sorted = [...filtered].sort((a, b) => {
+            const av = sortVal(a), bv = sortVal(b);
+            if (typeof av === 'string') return sortDir * av.localeCompare(bv);
+            return sortDir * (bv - av);
+        });
+
+        const sortLabels = { correlation: 'Correlation', diff: 'Difference', occ: 'Occurrence', name: 'Name' };
+        const sortBtns = Object.entries(sortLabels).map(([k, label]) =>
+            `<button class="fe-sort-btn${sortKey === k ? ' active' : ''}" data-key="${k}">${label}</button>`
+        ).join('');
+
+        const rows = sorted.map(f => {
+            const corrBarW = maxCorr > 0 ? (Math.abs(f.correlation) / maxCorr * 80) : 0;
+            const corrColor = f.correlation >= 0 ? '#d73027' : '#1a9850';
+            const diffBarW = maxDiff > 0 ? (Math.abs(f.diff ?? 0) / maxDiff * 80) : 0;
+            const diffColor = (f.diff ?? 0) >= 0 ? '#d73027' : '#1a9850';
+            const diffSign = (f.diff ?? 0) > 0 ? '+' : '';
+
+            return `<tr class="fe-row" data-feature="${f.name}">
+                <td class="fe-name">${f.name}</td>
+                <td>
+                  <div class="fe-bar-wrap">
+                    ${inlineBar(corrBarW, corrColor)}
+                    <span class="fe-val">${f.correlation.toFixed(3)}</span>
+                  </div>
+                </td>
+                <td>${f.nonToxicMean !== null ? f.nonToxicMean.toFixed(4) : '—'}</td>
+                <td>${f.toxicMean    !== null ? f.toxicMean.toFixed(4)    : '—'}</td>
+                <td>
+                  ${f.diff !== null
+                    ? `<div class="fe-bar-wrap">
+                         ${inlineBar(diffBarW, diffColor)}
+                         <span class="fe-val" style="color:${diffColor}">${diffSign}${f.diff.toFixed(4)}</span>
+                       </div>`
+                    : '—'}
+                </td>
+                <td>${f.occPct !== null ? f.occPct.toFixed(1) + '%' : '—'}</td>
+            </tr>`;
+        }).join('');
+
+        container.innerHTML = `
+            <div class="fe-controls">
+                <input id="feSearch" type="search" class="fe-search"
+                       placeholder="Search features…" value="${filterText}" />
+                <div class="fe-sort-btns">
+                    <span class="fe-sort-label">Sort:</span>
+                    ${sortBtns}
+                </div>
+                <span class="fe-count">${sorted.length} / ${features.length} features</span>
+            </div>
+            <div class="fe-table-wrap">
+                <table class="fe-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Correlation ↕</th>
+                            <th>Non-Toxic Mean</th>
+                            <th>Toxic Mean</th>
+                            <th>Difference ↕</th>
+                            <th>Occurrence %</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+            <div id="fe-detail-chart" class="fe-detail-chart"></div>`;
+
+        document.getElementById('feSearch').addEventListener('input', e => {
+            filterText = e.target.value;
+            renderTable();
+        });
+
+        container.querySelectorAll('.fe-sort-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const k = btn.dataset.key;
+                if (sortKey === k) sortDir *= -1;
+                else { sortKey = k; sortDir = -1; }
+                renderTable();
+            });
+        });
+
+        container.querySelectorAll('.fe-row').forEach(row => {
+            row.addEventListener('click', () => {
+                const fname = row.dataset.feature;
+                const f = features.find(f => f.name === fname);
+                if (!f || f.nonToxicMean === null) return;
+                container.querySelectorAll('.fe-row').forEach(r => r.classList.remove('selected'));
+                row.classList.add('selected');
+                showFeatureDetail(f);
+            });
+        });
+    }
+
+    function showFeatureDetail(f) {
+        const chart = document.getElementById('fe-detail-chart');
+        if (!chart) return;
+
+        const bars = [
+            { label: 'Non-Toxic', value: f.nonToxicMean, color: '#1a9850' },
+            { label: 'Toxic',     value: f.toxicMean,    color: '#d73027' },
+        ];
+        if (f.occNonToxicPct !== null && f.occToxicPct !== null) {
+            bars.push(
+                { label: 'Occurrence (Non-Toxic %)', value: f.occNonToxicPct, color: '#66bb6a' },
+                { label: 'Occurrence (Toxic %)',     value: f.occToxicPct,    color: '#ef5350' },
+            );
+        }
+
+        Plotly.newPlot(chart, [{
+            x: bars.map(b => b.label),
+            y: bars.map(b => b.value),
+            type: 'bar',
+            marker: { color: bars.map(b => b.color) },
+            text: bars.map(b => b.value.toFixed(4)),
+            textposition: 'outside',
+        }], {
+            title: { text: `<b>${f.name}</b> — class comparison`, font: { size: 13 } },
+            yaxis: { title: 'Value' },
+            height: 300,
+            margin: { t: 44, b: 48, l: 48, r: 16 },
+            showlegend: false,
+            paper_bgcolor: 'white',
+            plot_bgcolor: '#fafafa',
+        }, { responsive: true, displayModeBar: false });
+    }
+
+    renderTable();
+}
+
 function renderReadinessChecklist(data) {
+    const container = document.getElementById('readiness-checklist');
     const readiness = data.modeling_readiness;
 
     const items = [
@@ -224,26 +404,23 @@ function renderReadinessChecklist(data) {
         },
     ];
 
-    let html = '';
+    if (container) {
+        let html = '';
+        items.forEach(item => {
+            const statusClass = item.passed ? 'passed' : 'failed';
+            const icon = item.passed ? '✓' : '⚠';
+            html += `
+                <div class="readiness-item ${statusClass}">
+                    <div class="readiness-icon ${statusClass}">${icon}</div>
+                    <div>
+                        <strong>${item.name}</strong><br/>
+                        <span style="color: #666; font-size: 0.9em;">${item.note}</span>
+                    </div>
+                </div>`;
+        });
+        container.innerHTML = html;
+    }
 
-    items.forEach(item => {
-        const statusClass = item.passed ? 'passed' : 'failed';
-        const icon = item.passed ? '✓' : '⚠';
-
-        html += `
-            <div class="readiness-item ${statusClass}">
-                <div class="readiness-icon ${statusClass}">${icon}</div>
-                <div>
-                    <strong>${item.name}</strong><br/>
-                    <span style="color: #666; font-size: 0.9em;">${item.note}</span>
-                </div>
-            </div>
-        `;
-    });
-
-    document.getElementById('readiness-checklist').innerHTML = html;
-
-    // Set computed time
-    const now = new Date();
-    document.getElementById('computed-at').textContent = now.toLocaleString();
+    const computedAt = document.getElementById('computed-at');
+    if (computedAt) computedAt.textContent = new Date().toLocaleString();
 }

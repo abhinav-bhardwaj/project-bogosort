@@ -195,18 +195,16 @@ class DonationPopup {
   }
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    window.donationPopup = new DonationPopup({
-      showOnPageChange: true,
-      showDelay: 800,
-      dismissDuration: 36000
-    });
-  });
-} else {
+const _initDonationPopup = () => {
   window.donationPopup = new DonationPopup({
-    showOnPageChange: true,
-    showDelay: 800,
-    dismissDuration: 36000
+    showOnPageChange: false,
+    showDelay: 1500,
+    dismissDuration: 7 * 24 * 60 * 60 * 1000  // 7 days
   });
+};
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _initDonationPopup);
+} else {
+  _initDonationPopup();
 }
