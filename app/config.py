@@ -14,9 +14,11 @@ Used by:
 
 import os
 
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 class Config:
     """Base configuration."""
-    SQL_URI = os.environ.get("SQL_URI", "sqlite:///app/db/articles.db")
+    SQL_URI = os.environ.get("SQL_URI", f"sqlite:///{_PROJECT_ROOT}/app/db/articles.db")
     SECRET_KEY = os.environ.get("SECRET_KEY", "jigsaw_secret_key")
     DEBUG = False
     TESTING = False
@@ -26,7 +28,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
-    SQL_URI = os.environ.get("TEST_SQL_URI", "sqlite:///app/data/test_articles.db")
+    SQL_URI = os.environ.get("TEST_SQL_URI", f"sqlite:///{_PROJECT_ROOT}/app/db/test_articles.db")
 
 class ProductionConfig(Config):
     DEBUG = False
