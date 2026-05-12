@@ -5,11 +5,10 @@ import pytest
 class TestMainRoutes:
     """Test main blueprint routes."""
 
-    def test_index_redirect(self, client):
-        """Test that index redirects to dashboard."""
+    def test_index_renders_landing(self, client):
+        """Test that index renders the landing page."""
         response = client.get("/")
-        assert response.status_code == 302
-        assert "/dashboard/" in response.location
+        assert response.status_code == 200
 
     def test_index_redirect_follow(self, client):
         """Test following the redirect from index."""
