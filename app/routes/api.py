@@ -131,12 +131,13 @@ def list_models():
         return jsonify({
             "models": [
                 {
-                    "model_id": m["model_id"],
-                    "model_name": m["model_name"],
-                    "version": m["version"],
-                    "metrics": m["metrics"]
+                    "model_id": m.get("model_id", ""),
+                    "model_name": m.get("model_name", ""),
+                    "version": m.get("version", ""),
+                    "metrics": m.get("metrics", {}),
                 }
                 for m in models
+                if isinstance(m, dict)
             ]
         })
     except Exception as exc:
@@ -145,18 +146,26 @@ def list_models():
 
 @api.route("/models/<model_id>/evaluation", methods=["GET"])
 def model_evaluation(model_id):
-    evaluation = get_model_evaluation(model_id)
-    if not evaluation:
-        return jsonify({})
-    return jsonify(_attach_artifacts(evaluation, model_id))
+    try:
+        evaluation = get_model_evaluation(model_id)
+        if not evaluation:
+            return jsonify({})
+        return jsonify(_attach_artifacts(evaluation, model_id))
+    except Exception as exc:
+        logger.error(f"Error fetching evaluation for {model_id}: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to fetch model evaluation"}), 500
 
 @api.route("/evaluation", methods=["GET"])
 def default_evaluation():
-    model_id = request.args.get("model_id")
-    evaluation = get_model_evaluation(model_id)
-    if not evaluation:
-        return jsonify({})
-    return jsonify(_attach_artifacts(evaluation, evaluation.get("model_id")))
+    try:
+        model_id = request.args.get("model_id")
+        evaluation = get_model_evaluation(model_id)
+        if not evaluation:
+            return jsonify({})
+        return jsonify(_attach_artifacts(evaluation, evaluation.get("model_id")))
+    except Exception as exc:
+        logger.error(f"Error fetching default evaluation: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to fetch model evaluation"}), 500
 
 @api.route("/models/<model_id>/artifacts/<path:filename>", methods=["GET"])
 def model_artifact(model_id, filename):
@@ -178,7 +187,11 @@ def model_artifact(model_id, filename):
 
 @api.route("/articles", methods=["GET"])
 def articles_list():
-    return jsonify({"articles": list_articles()})
+    try:
+        return jsonify({"articles": list_articles()})
+    except Exception as exc:
+        logger.error(f"Failed to list articles: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to retrieve articles"}), 500
 
 @api.route("/articles/ingest", methods=["POST"])
 def articles_ingest():
@@ -196,8 +209,8 @@ def articles_ingest():
             MAX_THRESHOLD,
             "manual_threshold",
         )
-    except ValueError:
-        return jsonify({"error": "Invalid request parameters"}), 400
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
     model_name = payload.get("model_name") or DEFAULT_MODEL
 
     if not url:
@@ -218,6 +231,9 @@ def articles_ingest():
     except ValueError as exc:
         logger.warning(f"Article ingestion validation error: {exc}")
         return jsonify({"error": str(exc)}), 400
+    except RuntimeError as exc:
+        logger.error(f"Model unavailable during article ingestion: {exc}", exc_info=True)
+        return jsonify({"error": str(exc)}), 503
     except Exception as exc:
         logger.error(f"Unexpected error during article ingestion: {exc}", exc_info=True)
         return jsonify({"error": "Failed to ingest article. Please try again."}), 500
@@ -235,11 +251,11 @@ def article_detail(article_id):
             request.args.get("limit"), DEFAULT_COMMENT_LIMIT, MIN_LIMIT, MAX_LIMIT, "limit"
         )
         offset = _parse_int(request.args.get("offset"), 0, 0, MAX_OFFSET, "offset")
-    except ValueError:
-        return jsonify({"error": "Invalid request parameters"}), 400
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
 
-    return jsonify(
-        get_article(
+    try:
+        article = get_article(
             article_id,
             include_comments=include_comments,
             limit=limit,
@@ -247,7 +263,12 @@ def article_detail(article_id):
             decision=decision,
             sort=sort,
         )
-    )
+    except Exception as exc:
+        logger.error(f"Failed to fetch article {article_id}: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to retrieve article"}), 500
+    if not article:
+        return jsonify({"error": "Article not found"}), 404
+    return jsonify(article)
 
 @api.route("/articles/<article_id>/thresholds", methods=["PUT"])
 def article_thresholds(article_id):
@@ -263,12 +284,16 @@ def article_thresholds(article_id):
             MAX_THRESHOLD,
             "manual_threshold",
         )
-    except ValueError:
-        return jsonify({"error": "Invalid request parameters"}), 400
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
     if manual_threshold > auto_threshold:
         return jsonify({"error": "manual_threshold must be <= auto_threshold"}), 400
 
-    update_thresholds(article_id, auto_threshold, manual_threshold)
+    try:
+        update_thresholds(article_id, auto_threshold, manual_threshold)
+    except Exception as exc:
+        logger.error(f"Failed to update thresholds for {article_id}: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to update thresholds"}), 500
     return jsonify({"status": "ok"})
 
 @api.route("/articles/<article_id>/comments", methods=["GET"])
@@ -280,13 +305,24 @@ def article_comments(article_id):
             request.args.get("limit"), DEFAULT_COMMENT_LIMIT, MIN_LIMIT, MAX_LIMIT, "limit"
         )
         offset = _parse_int(request.args.get("offset"), 0, 0, MAX_OFFSET, "offset")
-    except ValueError:
-        return jsonify({"error": "Invalid request parameters"}), 400
-    return jsonify(list_comments(article_id, limit=limit, offset=offset, decision=decision, sort=sort))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    try:
+        return jsonify(list_comments(article_id, limit=limit, offset=offset, decision=decision, sort=sort))
+    except Exception as exc:
+        logger.error(f"Failed to list comments for {article_id}: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
 
 @api.route("/articles/<article_id>/comments/<comment_id>", methods=["GET"])
 def comment_detail(article_id, comment_id):
-    return jsonify(get_comment_detail(article_id, comment_id))
+    try:
+        payload = get_comment_detail(article_id, comment_id)
+    except Exception as exc:
+        logger.error(f"Failed to fetch comment {comment_id}: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to retrieve comment"}), 500
+    if not payload:
+        return jsonify({"error": "Comment not found"}), 404
+    return jsonify(payload)
 
 
 @api.route("/articles/<article_id>/comments/<comment_id>", methods=["PATCH"])
@@ -295,5 +331,9 @@ def update_comment(article_id, comment_id):
     decision = payload.get("decision", "").strip()
     if decision not in VALID_DECISIONS:
         return jsonify({"error": f"decision must be one of {sorted(VALID_DECISIONS)}"}), 400
-    update_comment_decision(article_id, comment_id, decision)
+    try:
+        update_comment_decision(article_id, comment_id, decision)
+    except Exception as exc:
+        logger.error(f"Failed to update decision for comment {comment_id}: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to update comment decision"}), 500
     return jsonify({"status": "ok", "decision": decision})

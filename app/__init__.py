@@ -56,7 +56,9 @@ def create_app(config_name=None):
     # Register error handlers
     @app.errorhandler(404)
     def not_found(error):
-        from flask import render_template
+        from flask import render_template, request, jsonify
+        if request.path.startswith('/api/'):
+            return jsonify({"error": "Not found"}), 404
         return render_template('error.html',
                              status_code=404,
                              error_message='Page Not Found',
@@ -64,7 +66,9 @@ def create_app(config_name=None):
 
     @app.errorhandler(500)
     def internal_error(error):
-        from flask import render_template
+        from flask import render_template, request, jsonify
+        if request.path.startswith('/api/'):
+            return jsonify({"error": "Internal server error"}), 500
         return render_template('error.html',
                              status_code=500,
                              error_message='Internal Server Error',

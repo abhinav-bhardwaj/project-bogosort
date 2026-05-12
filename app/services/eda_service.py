@@ -37,7 +37,7 @@ def load_eda_cache(cache_path: str) -> Dict[str, Any]:
     global _EDA_CACHE
 
     cache_path = Path(cache_path)
-    print(f"Loading EDA cache from {cache_path}")
+    logger.info(f"Loading EDA cache from {cache_path}")
 
     if not cache_path.exists():
         raise FileNotFoundError(f"EDA cache not found at {cache_path}")

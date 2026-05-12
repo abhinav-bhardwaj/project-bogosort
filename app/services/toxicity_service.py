@@ -16,12 +16,24 @@ Used by:
 
 import logging
 import time
-from analysis_and_inference.models.inference import predict_comment
+from analysis_and_inference.models.inference import predict_comment, _load
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_MODEL = "ensemble"
 EXPLAIN_VERSION = "v1"
+
+
+def check_model_available(model_name=DEFAULT_MODEL):
+    """Raise RuntimeError if model files are missing. Call before a scoring loop."""
+    if model_name is None:
+        model_name = DEFAULT_MODEL
+    try:
+        _load(model_name, with_explainer=False)
+    except FileNotFoundError as exc:
+        raise RuntimeError(f"Model files not found for '{model_name}': {exc}") from exc
+    except Exception as exc:
+        raise RuntimeError(f"Failed to load model '{model_name}': {exc}") from exc
 
 
 def score_comment(text, model_name=DEFAULT_MODEL, explain=False):
