@@ -7,6 +7,7 @@ fits without errors, and produces valid predictions and probability scores.
 
 import numpy as np
 import pytest
+from sklearn.datasets import make_classification
 
 from analysis_and_inference.models._common import make_pipeline
 from analysis_and_inference.models.lasso_log_reg.core_logistic_regression_lasso import LassoLogisticRegression
@@ -82,26 +83,16 @@ class TestSigmoid:
 # Unit tests — _soft_threshold
 # ---------------------------------------------------------------------------
 
-class TestSoftThreshold:
-    def test_value_inside_threshold_becomes_zero(self, model):
-        # coefficients smaller than the penalty are killed completely — this is what makes Lasso sparse
-        assert model._soft_threshold(0.03, 0.05) == 0.0
-
-    def test_negative_value_inside_threshold_becomes_zero(self, model):
-        # sparsity applies symmetrically to negative coefficients
-        assert model._soft_threshold(-0.03, 0.05) == 0.0
-
-    def test_value_outside_threshold_shrinks_by_lambda(self, model):
-        # surviving coefficients are pulled toward zero by exactly lambda, not left unchanged
-        assert model._soft_threshold(0.8, 0.05) == pytest.approx(0.75)
-
-    def test_negative_value_outside_threshold_shrinks_by_lambda(self, model):
-        # shrinkage toward zero means a negative coefficient moves in the positive direction
-        assert model._soft_threshold(-0.8, 0.05) == pytest.approx(-0.75)
-
-    def test_sign_is_preserved(self, model):
-        # the penalty shrinks the weight but must never flip it to the wrong direction
-        assert model._soft_threshold(-0.9, 0.05) < 0
+# covers inside-threshold zeroing, outside-threshold shrinkage, sign preservation, and symmetry
+@pytest.mark.parametrize("value, threshold, expected", [
+    ( 0.03,  0.05,  0.0),
+    (-0.03,  0.05,  0.0),
+    ( 0.8,   0.05,  0.75),
+    (-0.8,   0.05, -0.75),
+    (-0.9,   0.05, -0.85),
+])
+def test_soft_threshold_parametrized(model, value, threshold, expected):
+    assert model._soft_threshold(value, threshold) == pytest.approx(expected)
 
 
 # ---------------------------------------------------------------------------
@@ -213,3 +204,21 @@ class TestConvergence:
         model.fit(X, y)
 
         assert model.n_iter_ < model.max_iter
+
+
+# ---------------------------------------------------------------------------
+# Reproducibility
+# ---------------------------------------------------------------------------
+
+def test_lasso_reproducibility_with_random_state():
+    # LassoLogisticRegression has no random_state — it is fully deterministic (gradient descent
+    # from fixed zero initialization), so two fits on identical data always produce equal predictions
+    X, y = make_classification(n_samples=50, n_features=5, random_state=42)
+
+    m1 = LassoLogisticRegression(alpha=0.01, max_iter=1000)
+    m1.fit(X, y)
+
+    m2 = LassoLogisticRegression(alpha=0.01, max_iter=1000)
+    m2.fit(X, y)
+
+    assert np.array_equal(m1.predict(X), m2.predict(X))
