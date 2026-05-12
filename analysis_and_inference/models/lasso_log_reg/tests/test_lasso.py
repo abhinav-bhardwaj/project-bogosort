@@ -153,10 +153,14 @@ class TestPredictions:
         m, X = fitted_model
         assert set(m.predict(X)).issubset({0, 1})
 
-    def test_threshold_zero_predicts_all_ones(self, fitted_model):
-        # sigmoid output is always strictly > 0, so every sample clears a threshold of 0
-        m, X = fitted_model
-        assert np.all(m.predict(X, threshold=0.0) == 1)
+    def test_threshold_zero_predicts_all_ones(self):
+        # sigmoid is always > 0, so decision_threshold=0.0 forces every prediction to 1
+        rng = np.random.default_rng(1)
+        X = rng.standard_normal((50, 4))
+        y = (X[:, 0] > 0).astype(int)
+        m = LassoLogisticRegression(alpha=0.01, max_iter=500, decision_threshold=0.0)
+        m.fit(X, y)
+        assert np.all(m.predict(X) == 1)
 
 
 # ---------------------------------------------------------------------------
@@ -196,8 +200,8 @@ class TestIntercept:
 # ---------------------------------------------------------------------------
 
 class TestConvergence:
-    def test_converges_before_max_iter_on_separable_data(self, capsys):
-        # a large-margin dataset should let gradient descent stabilise long before the iteration cap
+    def test_converges_before_max_iter_on_separable_data(self):
+        # the model stores n_iter_ after fitting — on separable data it should be well under max_iter
         rng = np.random.default_rng(0)
         n = 100
         X = rng.standard_normal((n, 5))
@@ -208,4 +212,4 @@ class TestConvergence:
         model = LassoLogisticRegression(alpha=0.01, max_iter=1000, tol=1e-4)
         model.fit(X, y)
 
-        assert "converged at iteration" in capsys.readouterr().out
+        assert model.n_iter_ < model.max_iter
