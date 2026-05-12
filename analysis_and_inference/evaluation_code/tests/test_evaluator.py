@@ -53,6 +53,14 @@ class TestEvaluateClassification:
         y_pred = np.array([0, 0, 0, 0])
         evaluate_classification(y_true, y_pred, name="test")
 
+    def test_evaluator_all_zero_labels(self):
+        # covers the edge case where y_true has no positive class at all
+        y_true = np.array([0, 0, 0, 0, 0, 0])
+        y_pred = np.array([0, 1, 0, 1, 0, 1])
+        result = evaluate_classification(y_true, y_pred, name="test")
+        assert isinstance(result, dict)
+        assert result["recall"] == 0.0
+
 
 # ---------------------------------------------------------------------------
 # Model module resolution
