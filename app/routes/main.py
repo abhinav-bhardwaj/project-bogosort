@@ -12,7 +12,22 @@ instead of resolving data server-side. This allows frontend components to fetch
 data asynchronously through the API layer, reducing template complexity and
 improving modularity.
 """
+import json
+import logging
+from pathlib import Path
 from flask import Blueprint, render_template
+
+logger = logging.getLogger(__name__)
+
+TEAM_BIO_PATH = Path("app/static/team_bio/team_bio.json")
+
+def _load_team():
+    try:
+        with TEAM_BIO_PATH.open(encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as exc:
+        logger.warning(f"Could not load team_bio.json: {exc}")
+        return []
 
 main = Blueprint("main", __name__)
 
@@ -26,7 +41,7 @@ def index():
 
 @main.route("/about/")
 def about():
-    return render_template("about.html")
+    return render_template("about.html", team=_load_team())
 
 @main.route("/articles/<article_id>/")
 def article_page(article_id):
