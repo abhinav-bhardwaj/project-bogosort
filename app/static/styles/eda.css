@@ -451,6 +451,11 @@ table tr:hover {
     vertical-align: middle;
 }
 
+.ir-table tbody td:nth-child(3) {
+    min-width: 240px;
+    padding-right: 20px;
+}
+
 .ir-table tbody tr:last-child td {
     border-bottom: none;
 }
@@ -476,15 +481,17 @@ table tr:hover {
 .ir-bar-wrap {
     display: flex;
     align-items: center;
-    gap: 8px;
-    min-width: 160px;
+    gap: 12px;
+    min-width: 220px;
+    position: relative;
 }
 
 .ir-bar {
     height: 10px;
     border-radius: 3px;
     min-width: 4px;
-    flex-shrink: 0;
+    flex-grow: 1;
+    max-width: 140px;
     transition: width 0.3s ease;
 }
 
@@ -492,6 +499,8 @@ table tr:hover {
     font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
+    min-width: 50px;
+    text-align: right;
 }
 
 .ir-tier {

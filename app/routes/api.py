@@ -42,6 +42,7 @@ from app.services.evaluation_service import (
     resolve_artifact_dir,
 )
 from app.services.wiki_client import is_allowed_wikipedia_url
+from app.services.toxicity_service import score_comment
 
 api = Blueprint('api', __name__)
 
@@ -117,6 +118,53 @@ def _attach_artifacts(evaluation, model_id):
     if images.get("error_patterns_by_feature"):
         payload["error_patterns_by_feature_url"] = images["error_patterns_by_feature"]
     return payload
+
+
+@api.route("/demo/infer", methods=["POST"])
+def demo_infer():
+    payload = request.get_json() or {}
+    text = (payload.get("text") or "").strip()
+    if not text:
+        return jsonify({"error": "Missing text"}), 400
+    if len(text) > 10000:
+        return jsonify({"error": "Text too long (max 10 000 characters)"}), 400
+
+    model_name = payload.get("model_name") or DEFAULT_MODEL
+    try:
+        auto_threshold = _parse_float(
+            payload.get("auto_threshold"), DEFAULT_AUTO_THRESHOLD, MIN_THRESHOLD, MAX_THRESHOLD, "auto_threshold"
+        )
+        manual_threshold = _parse_float(
+            payload.get("manual_threshold"), DEFAULT_MANUAL_THRESHOLD, MIN_THRESHOLD, MAX_THRESHOLD, "manual_threshold"
+        )
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    try:
+        result = score_comment(text, model_name=model_name, explain=True)
+    except Exception as exc:
+        logger.error(f"Demo inference error: {exc}", exc_info=True)
+        return jsonify({"error": "Inference failed. Please try again."}), 500
+
+    probability = result["probability"]
+    if probability >= auto_threshold:
+        decision = "auto-ban"
+    elif probability >= manual_threshold:
+        decision = "manual-review"
+    else:
+        decision = "none"
+
+    return jsonify({
+        "text": text,
+        "model_name": model_name,
+        "toxicity": probability,
+        "label": result["label"],
+        "decision": decision,
+        "auto_threshold": auto_threshold,
+        "manual_threshold": manual_threshold,
+        "inference_ms": result["inference_ms"],
+        "top_features": result["top_features"],
+    })
 
 
 @api.route('/models', methods=['GET'])
