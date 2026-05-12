@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Comment Explanation{% endblock %}
+
+{% block body_attrs %}data-article-id="{{ article_id }}" data-comment-id="{{ comment_id }}"{% endblock %}
+
+{% block main %}
+<main class="container">
+  <section class="content full" id="commentDetail">
+    <h1>Comment Explanation</h1>
+    <p>Article: <a id="commentArticleLink"></a></p>
+
+    <div class="comment-card">
+      <div class="comment-highlight" id="commentText"></div>
+      <div class="comment-meta">
+        <strong>Author:</strong> <span id="commentAuthor"></span> |
+        <strong>Timestamp:</strong> <span id="commentTimestamp"></span>
+      </div>
+    </div>
+
+    <div class="comment-explanation">
+      <h2>Why this comment was flagged</h2>
+      <p><strong>Triggered rule:</strong> <span id="triggeredRule"></span></p>
+      <p><strong>Model Name:</strong> <span id="modelName"></span></p>
+      <p><strong>Model confidence:</strong> <span id="commentConfidence"></span></p>
+      <p><strong>Current auto-threshold:</strong> <span id="autoThresholdInfo"></span></p>
+      <p><strong>Current manual threshold:</strong> <span id="manualThresholdInfo"></span></p>
+      <p><strong>Decision mode:</strong> <span id="decisionMode"></span></p>
+
+      <h3>Top contributing features (SHAP)</h3>
+      <ul id="featureList"></ul>
+    </div>
+  </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+  <script src="/static/js/article.js"></script>
+{% endblock %}

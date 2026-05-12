@@ -1,0 +1,284 @@
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field.full {
+  grid-column: 1 / -1;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wp-text);
+}
+
+.field input[type="text"],
+.field input[type="url"],
+.field input[type="number"],
+.field input[type="range"],
+.field select {
+  padding: 8px 10px;
+  border: 1px solid var(--wp-border);
+  border-radius: 3px;
+  background: var(--wp-card-bg);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.field input[type="text"]:focus,
+.field input[type="url"]:focus,
+.field input[type="number"]:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--wp-link);
+  box-shadow: inset 0 0 0 1px var(--wp-link);
+}
+
+.field input[type="range"] {
+  padding: 4px;
+}
+
+.input-panel {
+  padding: 0;
+}
+
+.article-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--wp-border);
+  border-radius: 3px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.article-input:focus {
+  outline: none;
+  border-color: var(--wp-link);
+  box-shadow: inset 0 0 0 1px var(--wp-link);
+}
+
+.input-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.input-row label {
+  font-size: 13px;
+  color: var(--wp-muted);
+  font-weight: 600;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+.controls label {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.controls select {
+  padding: 7px 11px;
+  border: 1px solid var(--wp-border);
+  background: var(--wp-card-bg);
+  border-radius: 3px;
+  font-size: 13px;
+  min-width: 160px;
+}
+
+#ingestStatus {
+  margin-top: 12px;
+}
+
+.status-item {
+  padding: 8px 12px;
+  background: var(--wp-accent);
+  border-left: 3px solid var(--wp-link);
+  margin-bottom: 6px;
+  font-size: 13px;
+  border-radius: 2px;
+}
+
+.status-item.error {
+  background: #fee7e6;
+  border-left-color: var(--wp-danger);
+  color: var(--wp-danger);
+}
+
+.status-item.success {
+  background: #e6f4e6;
+  border-left-color: #006600;
+}
+
+#modelSelect {
+  width: 100%;
+  min-width: 300px;
+  max-width: none;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid var(--wp-border);
+  border-radius: 4px;
+  background: var(--wp-card-bg);
+  box-shadow: var(--shadow-light);
+}
+
+/* ── Model info panel ────────────────────────────────────────────────── */
+.model-field {
+  grid-column: span 2;
+}
+
+.model-info-panel {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: #f0f4ff;
+  border-left: 3px solid var(--wp-link);
+  border-radius: 0 3px 3px 0;
+  font-size: 12px;
+  color: var(--wp-text);
+  line-height: 1.5;
+}
+
+/* ── Threshold section ───────────────────────────────────────────────── */
+.threshold-header {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 10px;
+}
+
+.threshold-label-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--wp-text);
+}
+
+.threshold-label-hint {
+  font-size: 12px;
+  color: var(--wp-muted);
+  line-height: 1.4;
+}
+
+/* Zone bar */
+.threshold-zone-wrap {
+  margin-bottom: 16px;
+}
+
+.threshold-zone-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.tz-safe   { background: #4caf50; transition: width 0.2s; }
+.tz-review { background: #ff9800; transition: width 0.2s; }
+.tz-ban    { background: #d33;    transition: width 0.2s; }
+
+.tz-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--wp-muted);
+  line-height: 1.3;
+}
+
+/* Sliders row */
+.threshold-sliders {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Hint text under each slider */
+.field-hint {
+  font-size: 11px;
+  color: var(--wp-muted);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+/* Disabled state when SVM is selected */
+.thresholds-disabled .threshold-sliders {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.thresholds-disabled .threshold-zone-bar {
+  opacity: 0.3;
+}
+
+/* SVM info note */
+.svm-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: #fffbe6;
+  border: 1px solid #ffe082;
+  border-radius: 3px;
+  font-size: 12px;
+  color: #6d4c00;
+  line-height: 1.5;
+}
+
+.svm-note-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+/* ── Analysis success banner ─────────────────────────────────────────── */
+.analysis-success {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #e6f4e6;
+  border: 1px solid #4caf50;
+  border-left: 4px solid #2e7d32;
+  border-radius: 3px;
+  font-size: 13px;
+  color: #1b5e20;
+  font-weight: 600;
+}
+
+.analysis-success-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.analysis-success-scroll {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 400;
+  color: #388e3c;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

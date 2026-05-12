@@ -1,0 +1,353 @@
+{
+  "missing_values": {
+    "missing_count": {},
+    "missing_pct": {}
+  },
+  "duplicate_rows": 0,
+  "dtype_distribution": {
+    "int64": 24,
+    "float64": 9,
+    "object": 1
+  },
+  "target_distribution": {
+    "counts": {
+      "0": 115421,
+      "1": 12235
+    },
+    "percentages": {
+      "0": 90.42,
+      "1": 9.58
+    }
+  },
+  "imbalance_ratio": 9.4336738863915,
+  "split_report": {
+    "train": {
+      "rows": 127656,
+      "toxic_rate": 0.09584351695180798
+    },
+    "test": {
+      "rows": 31915,
+      "toxic_rate": 0.0958483471721761
+    },
+    "absolute_rate_gap": 4.830220368109983e-06
+  },
+  "feature_occurrence": {
+    "non_zero_count": {
+      "unique_word_ratio": 127656,
+      "char_count": 127656,
+      "avg_sentence_length": 127656,
+      "sentence_count": 127656,
+      "word_count": 127656,
+      "vader_compound": 107194,
+      "vader_intensity": 107194,
+      "vader_pos_minus_neg": 107111,
+      "vader_pos": 91036,
+      "vader_neg": 76959,
+      "has_second_person": 67392,
+      "second_person_density": 67392,
+      "second_person_count": 67392,
+      "negation_count": 66106,
+      "consecutive_punct_count": 55188,
+      "uppercase_ratio": 47550,
+      "vader_is_negative": 42063,
+      "elongated_token_count": 21490,
+      "exclamation_count": 18199,
+      "identity_mention_count": 17775,
+      "has_url_or_ip": 11533,
+      "profanity_count": 8336,
+      "ip_count": 7924,
+      "identity_race": 7201,
+      "identity_nationality": 4901,
+      "identity_gender": 4355,
+      "url_count": 4067,
+      "identity_religion": 3275,
+      "identity_sexuality": 1617,
+      "slang_count": 813,
+      "identity_disability": 673,
+      "obfuscated_profanity_count": 35
+    },
+    "non_zero_pct": {
+      "unique_word_ratio": 100.0,
+      "char_count": 100.0,
+      "avg_sentence_length": 100.0,
+      "sentence_count": 100.0,
+      "word_count": 100.0,
+      "vader_compound": 83.97,
+      "vader_intensity": 83.97,
+      "vader_pos_minus_neg": 83.91,
+      "vader_pos": 71.31,
+      "vader_neg": 60.29,
+      "has_second_person": 52.79,
+      "second_person_density": 52.79,
+      "second_person_count": 52.79,
+      "negation_count": 51.78,
+      "consecutive_punct_count": 43.23,
+      "uppercase_ratio": 37.25,
+      "vader_is_negative": 32.95,
+      "elongated_token_count": 16.83,
+      "exclamation_count": 14.26,
+      "identity_mention_count": 13.92,
+      "has_url_or_ip": 9.03,
+      "profanity_count": 6.53,
+      "ip_count": 6.21,
+      "identity_race": 5.64,
+      "identity_nationality": 3.84,
+      "identity_gender": 3.41,
+      "url_count": 3.19,
+      "identity_religion": 2.57,
+      "identity_sexuality": 1.27,
+      "slang_count": 0.64,
+      "identity_disability": 0.53,
+      "obfuscated_profanity_count": 0.03
+    },
+    "non_zero_count_non_toxic": {
+      "unique_word_ratio": 115421,
+      "char_count": 115421,
+      "avg_sentence_length": 115421,
+      "sentence_count": 115421,
+      "word_count": 115421,
+      "vader_compound": 95903,
+      "vader_intensity": 95903,
+      "vader_pos_minus_neg": 95822,
+      "vader_pos": 84044,
+      "vader_neg": 66357,
+      "has_second_person": 58652,
+      "second_person_density": 58652,
+      "second_person_count": 58652,
+      "negation_count": 61187,
+      "consecutive_punct_count": 51044,
+      "uppercase_ratio": 42998,
+      "vader_is_negative": 33069,
+      "elongated_token_count": 18937,
+      "exclamation_count": 14980,
+      "identity_mention_count": 15593,
+      "has_url_or_ip": 10347,
+      "profanity_count": 2026,
+      "ip_count": 6886,
+      "identity_race": 6535,
+      "identity_nationality": 4622,
+      "identity_gender": 3651,
+      "url_count": 3897,
+      "identity_religion": 2998,
+      "identity_sexuality": 1039,
+      "slang_count": 445,
+      "identity_disability": 571,
+      "obfuscated_profanity_count": 6
+    },
+    "non_zero_count_toxic": {
+      "unique_word_ratio": 12235,
+      "char_count": 12235,
+      "avg_sentence_length": 12235,
+      "sentence_count": 12235,
+      "word_count": 12235,
+      "vader_compound": 11291,
+      "vader_intensity": 11291,
+      "vader_pos_minus_neg": 11289,
+      "vader_pos": 6992,
+      "vader_neg": 10602,
+      "has_second_person": 8740,
+      "second_person_density": 8740,
+      "second_person_count": 8740,
+      "negation_count": 4919,
+      "consecutive_punct_count": 4144,
+      "uppercase_ratio": 4552,
+      "vader_is_negative": 8994,
+      "elongated_token_count": 2553,
+      "exclamation_count": 3219,
+      "identity_mention_count": 2182,
+      "has_url_or_ip": 1186,
+      "profanity_count": 6310,
+      "ip_count": 1038,
+      "identity_race": 666,
+      "identity_nationality": 279,
+      "identity_gender": 704,
+      "url_count": 170,
+      "identity_religion": 277,
+      "identity_sexuality": 578,
+      "slang_count": 368,
+      "identity_disability": 102,
+      "obfuscated_profanity_count": 29
+    },
+    "non_zero_pct_non_toxic": {
+      "unique_word_ratio": 100.0,
+      "char_count": 100.0,
+      "avg_sentence_length": 100.0,
+      "sentence_count": 100.0,
+      "word_count": 100.0,
+      "vader_compound": 83.09,
+      "vader_intensity": 83.09,
+      "vader_pos_minus_neg": 83.02,
+      "vader_pos": 72.82,
+      "vader_neg": 57.49,
+      "has_second_person": 50.82,
+      "second_person_density": 50.82,
+      "second_person_count": 50.82,
+      "negation_count": 53.01,
+      "consecutive_punct_count": 44.22,
+      "uppercase_ratio": 37.25,
+      "vader_is_negative": 28.65,
+      "elongated_token_count": 16.41,
+      "exclamation_count": 12.98,
+      "identity_mention_count": 13.51,
+      "has_url_or_ip": 8.96,
+      "profanity_count": 1.76,
+      "ip_count": 5.97,
+      "identity_race": 5.66,
+      "identity_nationality": 4.0,
+      "identity_gender": 3.16,
+      "url_count": 3.38,
+      "identity_religion": 2.6,
+      "identity_sexuality": 0.9,
+      "slang_count": 0.39,
+      "identity_disability": 0.49,
+      "obfuscated_profanity_count": 0.01
+    },
+    "non_zero_pct_toxic": {
+      "unique_word_ratio": 100.0,
+      "char_count": 100.0,
+      "avg_sentence_length": 100.0,
+      "sentence_count": 100.0,
+      "word_count": 100.0,
+      "vader_compound": 92.28,
+      "vader_intensity": 92.28,
+      "vader_pos_minus_neg": 92.27,
+      "vader_pos": 57.15,
+      "vader_neg": 86.65,
+      "has_second_person": 71.43,
+      "second_person_density": 71.43,
+      "second_person_count": 71.43,
+      "negation_count": 40.2,
+      "consecutive_punct_count": 33.87,
+      "uppercase_ratio": 37.2,
+      "vader_is_negative": 73.51,
+      "elongated_token_count": 20.87,
+      "exclamation_count": 26.31,
+      "identity_mention_count": 17.83,
+      "has_url_or_ip": 9.69,
+      "profanity_count": 51.57,
+      "ip_count": 8.48,
+      "identity_race": 5.44,
+      "identity_nationality": 2.28,
+      "identity_gender": 5.75,
+      "url_count": 1.39,
+      "identity_religion": 2.26,
+      "identity_sexuality": 4.72,
+      "slang_count": 3.01,
+      "identity_disability": 0.83,
+      "obfuscated_profanity_count": 0.24
+    }
+  },
+  "feature_target_correlation": {
+    "vader_neg": 0.4823605393915386,
+    "vader_pos_minus_neg": -0.3605173434823227,
+    "vader_compound": -0.29898337015823173,
+    "second_person_density": 0.28894743740660567,
+    "vader_is_negative": 0.2809513289218729,
+    "uppercase_ratio": 0.23098042668846772,
+    "has_second_person": 0.12158291004346708,
+    "vader_intensity": 0.11987206212678712,
+    "identity_sexuality": 0.10065869740541782,
+    "profanity_count": 0.10049427492747892,
+    "second_person_count": 0.08352544169887803,
+    "vader_pos": -0.06477312809766109,
+    "unique_word_ratio": 0.05673839651437165,
+    "char_count": -0.05482860270240695,
+    "word_count": -0.05326416049882027
+  },
+  "feature_means_by_class": {
+    "char_count": {
+      "non_toxic": 404.47802392978747,
+      "toxic": 294.71295463833263,
+      "diff": -109.76506929145484
+    },
+    "word_count": {
+      "non_toxic": 68.96611535162579,
+      "toxic": 51.06456885982836,
+      "diff": -17.901546491797426
+    },
+    "exclamation_count": {
+      "non_toxic": 0.3575345907590473,
+      "toxic": 4.14957090314671,
+      "diff": 3.792036312387663
+    },
+    "avg_sentence_length": {
+      "non_toxic": 12.848487472115137,
+      "toxic": 15.779480408062843,
+      "diff": 2.9309929359477067
+    },
+    "profanity_count": {
+      "non_toxic": 0.022370279238613424,
+      "toxic": 2.3994278708622803,
+      "diff": 2.3770575916236667
+    },
+    "second_person_count": {
+      "non_toxic": 1.6753883608702056,
+      "toxic": 3.5191663261136084,
+      "diff": 1.8437779652434028
+    },
+    "vader_compound": {
+      "non_toxic": 0.1652293022933435,
+      "toxic": -0.41721427053534943,
+      "diff": -0.582443572828693
+    },
+    "vader_is_negative": {
+      "non_toxic": 0.2865076545862538,
+      "toxic": 0.7351042092357989,
+      "diff": 0.44859655464954507
+    },
+    "elongated_token_count": {
+      "non_toxic": 0.2691971131769782,
+      "toxic": 0.6531262770739681,
+      "diff": 0.3839291638969899
+    },
+    "negation_count": {
+      "non_toxic": 1.2846795643773663,
+      "toxic": 0.9276665304454434,
+      "diff": -0.35701303393192285
+    },
+    "consecutive_punct_count": {
+      "non_toxic": 1.739033624730335,
+      "toxic": 1.4219861054352267,
+      "diff": -0.3170475192951083
+    },
+    "identity_mention_count": {
+      "non_toxic": 0.3216659013524402,
+      "toxic": 0.6004086636697997,
+      "diff": 0.2787427623173595
+    },
+    "vader_pos_minus_neg": {
+      "non_toxic": 0.04141490716594034,
+      "toxic": -0.16772227217000407,
+      "diff": -0.20913717933594442
+    },
+    "has_second_person": {
+      "non_toxic": 0.5081570944628794,
+      "toxic": 0.7143440948099714,
+      "diff": 0.20618700034709203
+    },
+    "vader_neg": {
+      "non_toxic": 0.06139008499319881,
+      "toxic": 0.2464667756436453,
+      "diff": 0.1850766906504465
+    }
+  },
+  "modeling_readiness": {
+    "split_fixed_and_leakage_safe": true,
+    "train_has_engineered_features": true,
+    "test_is_raw": true,
+    "target_imbalance_detected": true,
+    "candidate_features_count": 32,
+    "top_candidate_features": [
+      "vader_neg",
+      "vader_pos_minus_neg",
+      "vader_compound",
+      "second_person_density",
+      "vader_is_negative",
+      "uppercase_ratio",
+      "has_second_person",
+      "vader_intensity",
+      "identity_sexuality",
+      "profanity_count"
+    ]
+  }
+}

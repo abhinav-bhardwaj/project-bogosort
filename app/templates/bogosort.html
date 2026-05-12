@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Sorting Algorithm Visualizer{% endblock %}
+
+{% block main %}
+<main class="container" style="display: flex; gap: 20px; padding: 20px; max-width: 1200px; margin: 0 auto;">
+  <aside class="sidebar" style="flex: 0 0 220px; background: #f8f9fa; padding: 16px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); height: fit-content;">
+    <h3 style="font-size: 18px; color: #2a4b8d; margin-top: 0;">Navigation</h3>
+    <ul style="list-style: none; padding: 0; margin: 0;">
+      <li style="margin-bottom: 8px;"><a href="/" style="color: #0645ad; text-decoration: none;">Main</a></li>
+      <li style="margin-bottom: 8px;"><a href="/eda/" style="color: #0645ad; text-decoration: none;">EDA</a></li>
+      <li style="margin-bottom: 8px;"><a href="/dashboard/" style="color: #0645ad; text-decoration: none;">Dashboard</a></li>
+      <li style="margin-bottom: 8px;"><a href="/dashboard/nerdy/" style="color: #0645ad; text-decoration: none;">Evaluation</a></li>
+      <li><a href="/bogosort/" style="color: #0645ad; text-decoration: none;">Visualizer</a></li>
+    </ul>
+  </aside>
+
+  <section class="content" style="flex: 1;">
+    <h1 style="font-size: 28px; color: #202122; margin-top: 0;">Sorting Algorithm Visualizer</h1>
+    <p style="color: #72777d; margin-bottom: 20px;">Watch how different sorting algorithms arrange toxic words from Wikipedia comments.</p>
+
+    {% if error %}
+      <div style="margin-bottom: 20px; padding: 16px; background: #ffe5e5; color: #d33; border: 1px solid #d33; border-radius: 4px;">
+        <strong>⚠ Error:</strong> {{ error }}
+      </div>
+    {% endif %}
+
+    <!-- FORM & DISTRIBUTION: Only show when form flag is True -->
+    {% if show_form %}
+      <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); margin-bottom: 20px;">
+        <h2 style="font-size: 20px; color: #2a4b8d; margin-top: 0;">Word Distribution</h2>
+        <p style="color: #72777d; font-size: 14px;">Top 20 toxic words ranked by frequency. Select an algorithm and click Start.</p>
+        <img src="{{ dist_url }}" alt="Word Distribution" style="max-width: 100%; height: auto; border: 1px solid #a2a9b1; border-radius: 8px; background: #fff; margin: 16px 0;">
+
+        <form id="sortForm" method="post" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 16px; align-items: end;">
+          <!-- Algorithm Selection Dropdown -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label for="algorithm" style="font-weight: 600; color: #202122;">Select Algorithm</label>
+            <select id="algorithm" name="algorithm" style="padding: 10px; border: 1px solid #a2a9b1; border-radius: 4px; font-size: 14px; background: white; cursor: pointer;">
+              <option value="bogosort" {% if algorithm == 'bogosort' %}selected{% endif %}>Bogosort (Random shuffle)</option>
+              <option value="mergesort" {% if algorithm == 'mergesort' %}selected{% endif %}>Mergesort (Divide & conquer)</option>
+            </select>
+          </div>
+
+          <!-- Seed Input -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label for="seed" style="font-weight: 600; color: #202122;">Seed (optional)</label>
+            <input id="seed" name="seed" type="number" value="{{ seed or '' }}" placeholder="Leave empty for random" style="padding: 10px; border: 1px solid #a2a9b1; border-radius: 4px; font-size: 14px;">
+          </div>
+
+          <!-- Start Button -->
+          <button type="submit" style="padding: 10px 32px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; white-space: nowrap; font-size: 14px; height: fit-content;">Start</button>
+        </form>
+      </div>
+    {% endif %}
+
+    <!-- SPINNER: Only show when spinner flag is True -->
+    {% if show_spinner %}
+      <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px;">
+          <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+            <div style="width: 32px; height: 32px; border: 4px solid #e0e0e0; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <div>
+              <p style="margin: 0; font-weight: 600; color: #2a4b8d; font-size: 16px;">
+                {% if algorithm == 'mergesort' %}Mergesort{% else %}Bogosort{% endif %} in progress...
+              </p>
+              <p style="margin: 4px 0 0 0; font-size: 13px; color: #72777d;">
+                Animation generation may take a moment. Please wait...
+              </p>
+            </div>
+          </div>
+          <form method="post" action="{{ url_for('bogosort.stop_sorting') }}" style="margin: 0; flex-shrink: 0;">
+            <button type="submit" style="padding: 10px 20px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; white-space: nowrap;">Stop</button>
+          </form>
+        </div>
+      </div>
+      <meta http-equiv="refresh" content="2">
+    {% endif %}
+
+    <!-- GIF RESULT: Only show when gif flag is True -->
+    {% if show_gif %}
+      <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); margin-bottom: 20px;">
+        <h2 style="font-size: 20px; color: #2a4b8d; margin-top: 0;">
+          {% if algorithm == 'mergesort' %}Mergesort{% else %}Bogosort{% endif %} Result
+        </h2>
+        {% if seed %}
+          <p style="font-size: 13px; color: #72777d; margin-bottom: 12px;">Seed: <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">{{ seed }}</code></p>
+        {% endif %}
+
+        <img src="{{ gif_url }}" alt="Sorting Animation" style="max-width: 100%; height: auto; border: 1px solid #a2a9b1; border-radius: 8px; background: #fff; margin: 16px 0;">
+
+        <div style="padding: 12px 16px; margin: 16px 0; background: {% if sorted %}#e8f5e9{% else %}#ffebee{% endif %}; border-left: 4px solid {% if sorted %}#4caf50{% else %}#f44336{% endif %}; border-radius: 4px;">
+          {% if sorted %}
+            <span style="color: #2e7d32; font-weight: 600; font-size: 15px;">✓ Success! Array sorted in <strong>{{ iteration }}</strong> iterations.</span>
+          {% else %}
+            <span style="color: #c62828; font-weight: 600; font-size: 15px;">✗ Max iterations ({{ iteration }}) reached without sorting.</span>
+          {% endif %}
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+          <form method="post" action="{{ url_for('bogosort.bogosort') }}" style="margin: 0;">
+            <input type="hidden" name="algorithm" value="{{ algorithm }}">
+            <input type="hidden" name="seed" value="{{ seed }}">
+            <button type="submit" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Start Again</button>
+          </form>
+          <form method="get" action="{{ url_for('bogosort.reset') }}" style="margin: 0;">
+            <button type="submit" style="padding: 10px 20px; background: #f5f5f5; color: #202122; border: 1px solid #a2a9b1; border-radius: 4px; cursor: pointer; font-weight: 600;">Reset</button>
+          </form>
+        </div>
+      </div>
+    {% endif %}
+
+    <p style="margin-top: 24px; color: #72777d;"><a href="/" style="color: #0645ad; text-decoration: none;">← Back to Home</a></p>
+  </section>
+
+  <aside class="infobox" style="flex: 0 0 240px; background: #f8f9fa; padding: 16px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); height: fit-content;">
+    <h4 style="font-size: 16px; color: #2a4b8d; margin-top: 0;">About This Demo</h4>
+    <div style="font-size: 13px; color: #72777d; line-height: 1.6;">
+      <p><strong>Purpose:</strong> Visualize how sorting algorithms work through an interactive demo.</p>
+      <p><strong>Data:</strong> Top 20 most toxic words from Wikipedia comments dataset (Jigsaw competition).</p>
+      <p><strong>Algorithms:</strong></p>
+      <ul style="margin: 8px 0; padding-left: 20px;">
+        <li><strong>Bogosort:</strong> Random shuffle until sorted (very inefficient!)</li>
+        <li><strong>Mergesort:</strong> Divide-and-conquer approach (much faster)</li>
+      </ul>
+      <p><strong>Note:</strong> Bogosort can be extremely slow—use a small dataset or be very patient!</p>
+    </div>
+  </aside>
+</main>
+
+<style>
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  code {
+    font-family: 'Courier New', monospace;
+  }
+</style>
+{% endblock %}

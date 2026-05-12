@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Model Evaluation{% endblock %}
+
+{% block head %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="/static/styles/outline-nav.css">
+{% endblock %}
+
+{% block main %}
+<main class="nerdy-layout">
+
+  <!-- Sidebar outline nav -->
+  <nav class="outline-nav" id="nerdyOutline" aria-label="Page outline">
+    <div class="outline-nav-title">On this page</div>
+    <ul>
+      <li><span class="outline-nav-group">Dataset</span></li>
+      <li><a href="#s-training">Training Data</a></li>
+      <li><a href="#s-features">Feature Categories</a></li>
+
+      <li><span class="outline-nav-group">Model</span></li>
+      <li><a href="#s-metrics">Key Metrics</a></li>
+      <li><a href="#s-confusion">Confusion Matrix</a></li>
+      <li><a href="#s-roc">ROC Curve</a></li>
+      <li><a href="#s-pr">PR Curve</a></li>
+      <li><a href="#s-calibration">Calibration</a></li>
+
+      <li><span class="outline-nav-group">Features</span></li>
+      <li><a href="#s-feat-imp">Feature Importance</a></li>
+      <li><a href="#s-perturb">Perturbation</a></li>
+
+      <li><span class="outline-nav-group">Errors</span></li>
+      <li><a href="#s-err-conf">Error Confidence</a></li>
+      <li><a href="#s-err-pat">Error Patterns</a></li>
+      <li><a href="#s-fp">False Positives</a></li>
+      <li><a href="#s-fn">False Negatives</a></li>
+
+      <li><span class="outline-nav-group">All Models</span></li>
+      <li><a href="#s-compare">Model Comparison</a></li>
+    </ul>
+  </nav>
+
+  <!-- Main content -->
+  <section class="content">
+    <h1>Model Evaluation</h1>
+    <div class="controls">
+      <label for="modelSelect">Model</label>
+      <select id="modelSelect" onchange="loadEvaluation()"></select>
+    </div>
+
+    <h2 id="s-training">Training Data</h2>
+    <div class="card">
+      <div class="metric-list" style="margin-bottom:14px">
+        <div class="metric-box"><h3>Total Comments</h3><p>127,656</p></div>
+        <div class="metric-box"><h3>Toxic</h3><p>12,235 <span style="font-size:11px;font-weight:400;color:var(--wp-muted)">(9.6%)</span></p></div>
+        <div class="metric-box"><h3>Non-toxic</h3><p>115,421 <span style="font-size:11px;font-weight:400;color:var(--wp-muted)">(90.4%)</span></p></div>
+        <div class="metric-box"><h3>Train / Test</h3><p>80 / 20%</p></div>
+        <div class="metric-box"><h3>Stratified</h3><p>Yes</p></div>
+        <div class="metric-box"><h3>Source</h3><p>Jigsaw / Kaggle</p></div>
+      </div>
+      <p style="margin:0 0 8px;font-size:13px">
+        Models are trained on the
+        <a href="https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge" target="_blank" rel="noopener">
+          Jigsaw Toxic Comment Classification Challenge
+        </a>
+        dataset (Google, 2018), comprising English Wikipedia talk-page comments.
+        The original dataset carries six fine-grained labels
+        (<em>toxic, severe_toxic, obscene, threat, insult, identity_hate</em>);
+        we collapse these into a single binary label — <strong>toxic</strong> (any label present) vs.
+        <strong>non-toxic</strong>.
+      </p>
+      <p style="margin:0;font-size:13px;color:var(--wp-muted)">
+        The strong class imbalance (~10 % positive) is handled by stratified train/test splitting.
+        Threshold tuning on the validation set helps balance precision and recall for downstream
+        moderation use-cases.
+      </p>
+    </div>
+
+    <h2 id="s-features">Feature Categories</h2>
+    <table class="detail-table">
+      <thead>
+        <tr>
+          <th style="width:20%">Category</th>
+          <th style="width:32%">Key Features</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Slur &amp; Lexicon</strong></td>
+          <td><code>slur_lexicon_hits</code>, <code>profanity_count</code>, <code>toxic_terms</code>, <code>lexicon_score</code></td>
+          <td>Count of matches against curated toxicity and profanity word-lists. High hit counts are strongly predictive across all models.</td>
+        </tr>
+        <tr>
+          <td><strong>Text Statistics</strong></td>
+          <td><code>caps_ratio</code>, <code>sentence_length</code></td>
+          <td>Stylistic signals: proportion of capital letters (ALL CAPS correlates with aggression) and comment length (very short or very long comments skew toxic).</td>
+        </tr>
+        <tr>
+          <td><strong>Sentiment</strong></td>
+          <td><code>neg_sentiment</code>, <code>sentiment_ratio</code></td>
+          <td>Negative-affect score from a pre-trained sentiment lexicon. Complements bag-of-words by capturing hostile tone even when specific slurs are absent.</td>
+        </tr>
+        <tr>
+          <td><strong>Semantic / Embedding</strong></td>
+          <td><code>context_score</code>, <code>intensity_measure</code>, <code>word_embeddings</code></td>
+          <td>Distributed word-vector features encoding semantic similarity. Used primarily by the SVM and contribute to the ensemble.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 id="s-metrics">Key Metrics</h2>
+    <div class="metric-list" id="metricsGrid"></div>
+
+    <h2 id="s-confusion">Confusion Matrix</h2>
+    <div id="confusionMatrix"></div>
+
+    <h2 id="s-roc">ROC Curve</h2>
+    <div id="rocContainer">
+      <canvas id="rocChart"></canvas>
+    </div>
+
+    <h2 id="s-pr">PR Curve</h2>
+    <div id="prContainer">
+      <canvas id="prChart"></canvas>
+    </div>
+
+    <h2 id="s-calibration">Calibration</h2>
+    <div id="calibrationContainer"></div>
+
+    <h2 id="s-feat-imp">Feature Importance</h2>
+    <div id="featureImportanceContainer"></div>
+
+    <h2 id="s-perturb">Perturbation Importance</h2>
+    <div id="perturbContainer">
+      <canvas id="perturbChart"></canvas>
+    </div>
+
+    <h2 id="s-err-conf">Error Confidence Distribution</h2>
+    <div id="errorConfidenceContainer"></div>
+
+    <h2 id="s-err-pat">Error Patterns by Feature</h2>
+    <div id="errorPatternsContainer"></div>
+    <div id="errorPatternsTable"></div>
+
+    <h2 id="s-fp">Sample False Positives</h2>
+    <div id="falsePositives"></div>
+
+    <h2 id="s-fn">Sample False Negatives</h2>
+    <div id="falseNegatives"></div>
+
+    <h2 id="s-compare">Model Comparison</h2>
+    <div id="compareContainer">
+      <canvas id="compareChart"></canvas>
+    </div>
+  </section>
+
+</main>
+{% endblock %}
+
+{% block scripts %}
+  <script src="/static/js/dashboard.js"></script>
+  <script src="/static/js/outline-nav.js"></script>
+{% endblock %}

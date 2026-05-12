@@ -1,0 +1,31 @@
+.comment-card {
+  background: var(--wp-card-bg);
+  border: 1px solid var(--wp-border);
+  border-radius: 4px;
+  padding: 16px;
+  margin: 16px 0;
+  box-shadow: var(--shadow-light);
+}
+
+.comment-highlight {
+  border-left: 4px solid var(--wp-link);
+  padding: 12px;
+  background: var(--wp-accent);
+  border-radius: 2px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.comment-meta {
+  margin-top: 8px;
+  color: var(--wp-muted);
+  font-size: 12px;
+}
+
+.comment-explanation {
+  background: var(--wp-card-bg);
+  border: 1px solid var(--wp-border);
+  border-radius: 4px;
+  padding: 16px;
+  margin: 16px 0;
+}
