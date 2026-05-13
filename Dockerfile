@@ -6,7 +6,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
-RUN .venv/bin/pip install gunicorn
+RUN uv pip install --python /app/.venv/bin/python gunicorn
 
 COPY . .
 
