@@ -458,3 +458,6 @@ Check `SQL_URI` in `app/config.py` and ensure the database file/server is access
 ### Wikipedia fetching fails
 Verify your internet connection and that the Wikipedia URL is valid.
 
+
+### Disclaimer regarding the use of AI in the making of this project
+AI assistants were used throughout the making of this project. In particular, AI agents were useful to generate code, ensure code quality and consistency across all group members. 
