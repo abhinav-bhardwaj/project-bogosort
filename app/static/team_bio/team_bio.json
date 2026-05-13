@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Bianca Rosca-Mayer",
+    "bio": "Economist by training and currently working at the intersection between labour economics and policy, Bianca sometimes wonders how she ended up studying data science for her Master's. Especially considering that, no matter how much programming she does and how much she improves in its complexities, she still uses her phone like a grandma. Other than that, she is enthusiastic about almost anything, from politics and statistics to karaoke and hiking.",
+    "image": "team_bio/Bianca_Rosca-Mayer.jpeg",
+    "photo_position": "center 20%"
+  },
+  {
+    "name": "Helena Kandjumbwa",
+    "bio": "A lawyer by training and polyglot by circumstance, Helena is nearly finished with a Master’s in Public Policy and added a second Master’s in Data Science somewhere along the way as an aggressive exercise of free will (and also for the plot). Her interests span governance, fitness, fashion, and Africa’s socio-economic development -  a commitment reflected in both her NGO, which has already built two schools, and her work with a social enterprise in Kenya tackling energy poverty. She is also an aspiring rapper, because some side quests are too important to ignore.",
+    "image": "team_bio/Helena_Kandjumbwa.jpeg",
+    "photo_position": "center center"
+  },
+  {
+    "name": "David Moth",
+    "bio": "Once, David almost failed his parachuting class because he landed in a tree. Asides from that, he's a data scientist with an interdisplinary background spanning statistics, ML, public policy, psychology, politics, and economics. Professionally, his experiences range from e-commerce, venture capital, academic research, sustainability, and analytics. Parachuting skills under review.",
+    "image": "team_bio/David_Moth.jpeg",
+    "photo_position": "center 20%"
+  },
+  {
+    "name": "Alexis Grangier",
+    "bio": "Unfortunately, this picture really does depict a French man in a striped sweater in the wild. Alexis loves to swim and dive in the ocean, but he lives in Berlin so he does data science and economics instead. After several experiences in policy and research in the energy sector between Paris and Berlin, he seeks to explore industrial applications of AI in defense and digital sovereignty.",
+    "image": "team_bio/Alexis_Grangier.jpeg",
+    "photo_position": "center 55%"
+  },
+  {
+    "name": "Aarushi Mahajan",
+    "bio": "Aarushi traded political science for data science, which means she now tries to apply the same critical thinking to gradient descent that she once applied to government policy (with arguably similar levels of bureaucratic frustration). Her interests lie at the intersection of AI and digital governance - which, given the current state of both, keeps her busy. Outside of class, she channels the same precision into cooking, where at least the loss function is edible.",
+    "image": "team_bio/Aarushi_Mahajan.jpeg",
+    "photo_position": "center 20%"
+  },
+  {
+    "name": "Abhinav Dubey",
+    "bio": "Abhi is an honorary physicist turned data scientist turned policy graduate student - a career trajectory that screams 'I don't want to choose, I want it interdisciplinary'. He's obsessed with space policy, innovation, and evidence-based decision-making. He's a chai connoisseur, devoted hiker, and amateur astronomer with an unhealthy passion for all things space. Fair warning: he does NOT yodel, despite what his humming and singing habits might suggest - WIP though",
+    "image": "team_bio/Abhinav_Dubey.jpeg",
+    "photo_position": "center 15%"
+  },
+  {
+    "name": "Klaas Wolff",
+    "bio": "Klaas froze last year on his birthday in a tent in Gran Canaria. Either he doesn't have a birthday all the time or he doesn't want to freeze anymore, so he decided to take the \"easy way\" of studying Data Science for Public Policy. He is also active in the field of democracy and has already started a project with Wikimedia Germany and others in the field of democracy in the digital sphere (still heating up).",
+    "image": "team_bio/Klaas_Wolff.jpeg",
+    "photo_position": "center 20%"
+  }
+]

@@ -73,10 +73,11 @@ class TestIngestArticle:
     @patch("app.services.wiki_client.fetch_wikipedia_metadata")
     @patch("app.services.wiki_client.fetch_talk_page_comments")
     @patch("app.services.toxicity_service.score_comment")
+    @patch("app.services.article_service.check_model_available")
     @patch("app.db.article_repository.upsert_article")
     @patch("app.db.article_repository.get_article_summary")
     def test_ingest_article_success(
-        self, mock_get_summary, mock_upsert, mock_score, mock_fetch_comments, mock_fetch_meta,
+        self, mock_get_summary, mock_upsert, mock_check_model, mock_score, mock_fetch_comments, mock_fetch_meta,
         mock_parse, mock_is_allowed
     ):
         """Test successful article ingestion."""
@@ -146,10 +147,11 @@ class TestIngestArticle:
     @patch("app.services.wiki_client.parse_wiki_title_from_url")
     @patch("app.services.wiki_client.fetch_wikipedia_metadata")
     @patch("app.services.wiki_client.fetch_talk_page_comments")
+    @patch("app.services.article_service.check_model_available")
     @patch("app.db.article_repository.upsert_article")
     @patch("app.db.article_repository.get_article_summary")
     def test_ingest_empty_talk_page(
-        self, mock_get_summary, mock_upsert, mock_fetch_comments, mock_fetch_meta, mock_parse, mock_is_allowed
+        self, mock_get_summary, mock_upsert, mock_check_model, mock_fetch_comments, mock_fetch_meta, mock_parse, mock_is_allowed
     ):
         """Test ingesting article with empty talk page."""
         mock_is_allowed.return_value = True
@@ -171,10 +173,11 @@ class TestIngestArticle:
     @patch("app.services.wiki_client.fetch_wikipedia_metadata")
     @patch("app.services.wiki_client.fetch_talk_page_comments")
     @patch("app.services.toxicity_service.score_comment")
+    @patch("app.services.article_service.check_model_available")
     @patch("app.db.article_repository.upsert_article")
     @patch("app.db.article_repository.get_article_summary")
     def test_ingest_with_different_model(
-        self, mock_get_summary, mock_upsert, mock_score, mock_fetch_comments, mock_fetch_meta,
+        self, mock_get_summary, mock_upsert, mock_check_model, mock_score, mock_fetch_comments, mock_fetch_meta,
         mock_parse, mock_is_allowed
     ):
         """Test ingestion with different model name."""
@@ -464,10 +467,11 @@ class TestArticleServiceIntegration:
     @patch("app.services.wiki_client.fetch_wikipedia_metadata")
     @patch("app.services.wiki_client.fetch_talk_page_comments")
     @patch("app.services.toxicity_service.score_comment")
+    @patch("app.services.article_service.check_model_available")
     @patch("app.db.article_repository.upsert_article")
     @patch("app.db.article_repository.get_article_summary")
     def test_article_ingestion_workflow(
-        self, mock_get_summary, mock_upsert, mock_score, mock_fetch_comments, mock_fetch_meta,
+        self, mock_get_summary, mock_upsert, mock_check_model, mock_score, mock_fetch_comments, mock_fetch_meta,
         mock_parse, mock_is_allowed
     ):
         """Test complete article ingestion workflow."""

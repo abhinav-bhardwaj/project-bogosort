@@ -1,9 +1,30 @@
+"""
+article_service.py - service layer for Wikipedia article ingestion and toxicity analysis
+
+This module coordinates:
+- Wikipedia metadata retrieval
+- talk-page comment collection
+- toxicity scoring and explanation generation
+- moderation decision assignment
+- article persistence and retrieval
+- threshold management
+
+It fetches article metadata, retrieves talk-page comments, scores them for toxicity,
+assigns moderation decisions, and stores the article and comment data.
+
+Used by:
+- api.py
+- article repository layer
+- toxicity inference services
+"""
+
 import hashlib
 import logging
 from datetime import datetime
 
 from app.db import article_repository
 from app.services import evaluation_service, toxicity_service, wiki_client
+from app.services.toxicity_service import check_model_available
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +60,8 @@ def ingest_article(url, limit=30, auto_threshold=0.75, manual_threshold=0.55, mo
         raise ValueError(f"Failed to fetch article metadata")
     logger.info(f"Fetched metadata for: {meta.get('title', 'Unknown')}")
 
+    check_model_available(model_name)
+
     # Fetch talk page comments using WikipediaTalkFetcher
     talk_comments = wiki_client.fetch_talk_page_comments(title, limit=limit)
     logger.info(f"Fetched {len(talk_comments)} comments from talk page")
@@ -61,6 +84,7 @@ def ingest_article(url, limit=30, auto_threshold=0.75, manual_threshold=0.55, mo
         except (TypeError, ValueError) as exc:
             logger.error(f"Invalid toxicity probability: {prob}", exc_info=True)
             toxicity = 0.0
+        inference_ms = result.get("inference_ms", 0.0)
         running += toxicity
 
         timestamp = c.get("timestamp", "")
@@ -79,7 +103,7 @@ def ingest_article(url, limit=30, auto_threshold=0.75, manual_threshold=0.55, mo
         comments.append(
             {
                 "id": comment_id,
-                "author": c.get("author", "Unknown"),
+                "author": c.get("author") or "unsigned",
                 "timestamp": timestamp,
                 "text": comment_text,
                 "toxicity": toxicity,
@@ -88,12 +112,22 @@ def ingest_article(url, limit=30, auto_threshold=0.75, manual_threshold=0.55, mo
                 "top_features": result.get("top_features", []),
                 "model_version": model_version,
                 "explain_version": result.get("explain_version", ""),
+                "inference_ms": inference_ms,
             }
         )
 
     trend = {"dates": trend_dates, "scores": trend_scores, "threshold": manual_threshold}
     flagged_count = sum(1 for c in comments if c["is_flagged"])
-    logger.info(f"Scored {len(comments)} comments, flagged {flagged_count}")
+
+    inference_times = [c["inference_ms"] for c in comments if c["inference_ms"] > 0]
+    inference_stats = {
+        "count": len(inference_times),
+        "total_ms": round(sum(inference_times), 1),
+        "avg_ms": round(sum(inference_times) / len(inference_times), 1) if inference_times else 0.0,
+        "min_ms": round(min(inference_times), 1) if inference_times else 0.0,
+        "max_ms": round(max(inference_times), 1) if inference_times else 0.0,
+    }
+    logger.info(f"Scored {len(comments)} comments, flagged {flagged_count}, avg inference {inference_stats['avg_ms']}ms")
 
     article_repository.upsert_article(
         {
@@ -107,6 +141,7 @@ def ingest_article(url, limit=30, auto_threshold=0.75, manual_threshold=0.55, mo
             "manual_threshold": manual_threshold,
             "flagged_count": flagged_count,
             "trend": trend,
+            "inference_stats": inference_stats,
         },
         comments,
     )
@@ -115,26 +150,55 @@ def ingest_article(url, limit=30, auto_threshold=0.75, manual_threshold=0.55, mo
     return article_repository.get_article_summary(article_id)
 
 def list_articles():
-    return article_repository.list_articles()
+    try:
+        return article_repository.list_articles()
+    except Exception as exc:
+        logger.error("Failed to list articles", exc_info=True)
+        raise
 
 def get_article(article_id, include_comments=True, limit=50, offset=0, decision=None, sort="toxicity_desc"):
-    return article_repository.get_article(
-        article_id, include_comments=include_comments, limit=limit, offset=offset, decision=decision, sort=sort
-    )
+    try:
+        return article_repository.get_article(
+            article_id, include_comments=include_comments, limit=limit, offset=offset, decision=decision, sort=sort
+        )
+    except Exception as exc:
+        logger.error(f"Failed to get article {article_id}", exc_info=True)
+        raise
 
 
 def list_comments(article_id, limit=50, offset=0, decision=None, sort="toxicity_desc"):
-    comments, total = article_repository.list_comments(
-        article_id, limit=limit, offset=offset, decision=decision, sort=sort
-    )
-    return {"comments": comments, "total": total, "limit": limit, "offset": offset}
+    try:
+        comments, total = article_repository.list_comments(
+            article_id, limit=limit, offset=offset, decision=decision, sort=sort
+        )
+        return {"comments": comments, "total": total, "limit": limit, "offset": offset}
+    except Exception as exc:
+        logger.error(f"Failed to list comments for article {article_id}", exc_info=True)
+        raise
 
 def update_thresholds(article_id, auto_threshold, manual_threshold):
-    article_repository.update_thresholds(article_id, auto_threshold, manual_threshold)
+    try:
+        article_repository.update_thresholds(article_id, auto_threshold, manual_threshold)
+    except Exception as exc:
+        logger.error(f"Failed to update thresholds for article {article_id}", exc_info=True)
+        raise
+
+
+def update_comment_decision(article_id, comment_id, decision):
+    try:
+        article_repository.update_comment_decision(comment_id, decision)
+    except Exception as exc:
+        logger.error(f"Failed to update decision for comment {comment_id}", exc_info=True)
+        raise
 
 
 def get_comment_detail(article_id, comment_id):
-    payload = article_repository.get_comment(article_id, comment_id)
+    try:
+        payload = article_repository.get_comment(article_id, comment_id)
+    except Exception as exc:
+        logger.error(f"Failed to fetch comment {comment_id}", exc_info=True)
+        raise
+
     if not payload:
         return {}
 
@@ -147,9 +211,12 @@ def get_comment_detail(article_id, comment_id):
             comment["text"], model_name=payload["article"]["model_name"], explain=True
         )
         if result.get("top_features"):
-            article_repository.update_comment_explanation(
-                comment_id, result["top_features"], result["explain_version"]
-            )
+            try:
+                article_repository.update_comment_explanation(
+                    comment_id, result["top_features"], result["explain_version"]
+                )
+            except Exception as exc:
+                logger.warning(f"Failed to persist explanation for comment {comment_id}: {exc}")
             comment["top_features"] = result["top_features"]
             comment["explain_version"] = result["explain_version"]
 

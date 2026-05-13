@@ -1,3 +1,22 @@
+"""
+api.py — REST API routes for moderation, evaluation and article management
+
+This module centralizes all HTTP API endpoints behind a single Flask Blueprint.
+Routes delegate business logic to service-layer modules instead of implementing
+database, evaluation, or inference logic directly inside controllers.
+
+This separation keeps routing lightweight and makes services independently testable,
+reusable, and replaceable without changing endpoint structure.
+
+Model artifact access is restricted through allowlists and path validation to
+prevent unsafe filesystem access. All endpoints return structured JSON errors
+instead of exposing internal exceptions directly.
+
+The API layer also isolates Flask-specific request handling from the underlying
+moderation and evaluation pipelines, simplifying future migration to other
+interfaces if needed.
+"""
+
 import logging
 from flask import Blueprint, request, jsonify, abort, send_from_directory
 
@@ -10,6 +29,7 @@ from app.services.article_service import (
     ingest_article,
     list_articles,
     list_comments,
+    update_comment_decision,
     update_thresholds,
 )
 
@@ -22,6 +42,7 @@ from app.services.evaluation_service import (
     resolve_artifact_dir,
 )
 from app.services.wiki_client import is_allowed_wikipedia_url
+from app.services.toxicity_service import score_comment
 
 api = Blueprint('api', __name__)
 
@@ -34,8 +55,8 @@ MAX_THRESHOLD = 1.0
 DEFAULT_AUTO_THRESHOLD = 0.75
 DEFAULT_MANUAL_THRESHOLD = 0.55
 MAX_OFFSET = 1000000
-VALID_DECISIONS = {"auto-ban", "manual-review", "none", "flagged"}
-VALID_SORTS = {"toxicity_desc", "toxicity_asc", "timestamp_desc", "timestamp_asc"}
+VALID_DECISIONS = {"auto-ban", "manual-ban", "manual-review", "none", "flagged"}
+VALID_SORTS = {"toxicity_desc", "toxicity_asc", "timestamp_desc", "timestamp_asc", "decision_asc"}
 
 def _parse_int(value, default, min_value, max_value, field_name):
     if value is None or value == "":
@@ -99,6 +120,53 @@ def _attach_artifacts(evaluation, model_id):
     return payload
 
 
+@api.route("/demo/infer", methods=["POST"])
+def demo_infer():
+    payload = request.get_json() or {}
+    text = (payload.get("text") or "").strip()
+    if not text:
+        return jsonify({"error": "Missing text"}), 400
+    if len(text) > 10000:
+        return jsonify({"error": "Text too long (max 10 000 characters)"}), 400
+
+    model_name = payload.get("model_name") or DEFAULT_MODEL
+    try:
+        auto_threshold = _parse_float(
+            payload.get("auto_threshold"), DEFAULT_AUTO_THRESHOLD, MIN_THRESHOLD, MAX_THRESHOLD, "auto_threshold"
+        )
+        manual_threshold = _parse_float(
+            payload.get("manual_threshold"), DEFAULT_MANUAL_THRESHOLD, MIN_THRESHOLD, MAX_THRESHOLD, "manual_threshold"
+        )
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    try:
+        result = score_comment(text, model_name=model_name, explain=True)
+    except Exception as exc:
+        logger.error(f"Demo inference error: {exc}", exc_info=True)
+        return jsonify({"error": "Inference failed. Please try again."}), 500
+
+    probability = result["probability"]
+    if probability >= auto_threshold:
+        decision = "auto-ban"
+    elif probability >= manual_threshold:
+        decision = "manual-review"
+    else:
+        decision = "none"
+
+    return jsonify({
+        "text": text,
+        "model_name": model_name,
+        "toxicity": probability,
+        "label": result["label"],
+        "decision": decision,
+        "auto_threshold": auto_threshold,
+        "manual_threshold": manual_threshold,
+        "inference_ms": result["inference_ms"],
+        "top_features": result["top_features"],
+    })
+
+
 @api.route('/models', methods=['GET'])
 def list_models():
     try:
@@ -111,12 +179,13 @@ def list_models():
         return jsonify({
             "models": [
                 {
-                    "model_id": m["model_id"],
-                    "model_name": m["model_name"],
-                    "version": m["version"],
-                    "metrics": m["metrics"]
+                    "model_id": m.get("model_id", ""),
+                    "model_name": m.get("model_name", ""),
+                    "version": m.get("version", ""),
+                    "metrics": m.get("metrics", {}),
                 }
                 for m in models
+                if isinstance(m, dict)
             ]
         })
     except Exception as exc:
@@ -125,18 +194,26 @@ def list_models():
 
 @api.route("/models/<model_id>/evaluation", methods=["GET"])
 def model_evaluation(model_id):
-    evaluation = get_model_evaluation(model_id)
-    if not evaluation:
-        return jsonify({})
-    return jsonify(_attach_artifacts(evaluation, model_id))
+    try:
+        evaluation = get_model_evaluation(model_id)
+        if not evaluation:
+            return jsonify({})
+        return jsonify(_attach_artifacts(evaluation, model_id))
+    except Exception as exc:
+        logger.error(f"Error fetching evaluation for {model_id}: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to fetch model evaluation"}), 500
 
 @api.route("/evaluation", methods=["GET"])
 def default_evaluation():
-    model_id = request.args.get("model_id")
-    evaluation = get_model_evaluation(model_id)
-    if not evaluation:
-        return jsonify({})
-    return jsonify(_attach_artifacts(evaluation, evaluation.get("model_id")))
+    try:
+        model_id = request.args.get("model_id")
+        evaluation = get_model_evaluation(model_id)
+        if not evaluation:
+            return jsonify({})
+        return jsonify(_attach_artifacts(evaluation, evaluation.get("model_id")))
+    except Exception as exc:
+        logger.error(f"Error fetching default evaluation: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to fetch model evaluation"}), 500
 
 @api.route("/models/<model_id>/artifacts/<path:filename>", methods=["GET"])
 def model_artifact(model_id, filename):
@@ -158,7 +235,11 @@ def model_artifact(model_id, filename):
 
 @api.route("/articles", methods=["GET"])
 def articles_list():
-    return jsonify({"articles": list_articles()})
+    try:
+        return jsonify({"articles": list_articles()})
+    except Exception as exc:
+        logger.error(f"Failed to list articles: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to retrieve articles"}), 500
 
 @api.route("/articles/ingest", methods=["POST"])
 def articles_ingest():
@@ -176,8 +257,8 @@ def articles_ingest():
             MAX_THRESHOLD,
             "manual_threshold",
         )
-    except ValueError:
-        return jsonify({"error": "Invalid request parameters"}), 400
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
     model_name = payload.get("model_name") or DEFAULT_MODEL
 
     if not url:
@@ -198,6 +279,9 @@ def articles_ingest():
     except ValueError as exc:
         logger.warning(f"Article ingestion validation error: {exc}")
         return jsonify({"error": str(exc)}), 400
+    except RuntimeError as exc:
+        logger.error(f"Model unavailable during article ingestion: {exc}", exc_info=True)
+        return jsonify({"error": str(exc)}), 503
     except Exception as exc:
         logger.error(f"Unexpected error during article ingestion: {exc}", exc_info=True)
         return jsonify({"error": "Failed to ingest article. Please try again."}), 500
@@ -215,11 +299,11 @@ def article_detail(article_id):
             request.args.get("limit"), DEFAULT_COMMENT_LIMIT, MIN_LIMIT, MAX_LIMIT, "limit"
         )
         offset = _parse_int(request.args.get("offset"), 0, 0, MAX_OFFSET, "offset")
-    except ValueError:
-        return jsonify({"error": "Invalid request parameters"}), 400
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
 
-    return jsonify(
-        get_article(
+    try:
+        article = get_article(
             article_id,
             include_comments=include_comments,
             limit=limit,
@@ -227,7 +311,12 @@ def article_detail(article_id):
             decision=decision,
             sort=sort,
         )
-    )
+    except Exception as exc:
+        logger.error(f"Failed to fetch article {article_id}: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to retrieve article"}), 500
+    if not article:
+        return jsonify({"error": "Article not found"}), 404
+    return jsonify(article)
 
 @api.route("/articles/<article_id>/thresholds", methods=["PUT"])
 def article_thresholds(article_id):
@@ -243,12 +332,16 @@ def article_thresholds(article_id):
             MAX_THRESHOLD,
             "manual_threshold",
         )
-    except ValueError:
-        return jsonify({"error": "Invalid request parameters"}), 400
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
     if manual_threshold > auto_threshold:
         return jsonify({"error": "manual_threshold must be <= auto_threshold"}), 400
 
-    update_thresholds(article_id, auto_threshold, manual_threshold)
+    try:
+        update_thresholds(article_id, auto_threshold, manual_threshold)
+    except Exception as exc:
+        logger.error(f"Failed to update thresholds for {article_id}: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to update thresholds"}), 500
     return jsonify({"status": "ok"})
 
 @api.route("/articles/<article_id>/comments", methods=["GET"])
@@ -260,10 +353,35 @@ def article_comments(article_id):
             request.args.get("limit"), DEFAULT_COMMENT_LIMIT, MIN_LIMIT, MAX_LIMIT, "limit"
         )
         offset = _parse_int(request.args.get("offset"), 0, 0, MAX_OFFSET, "offset")
-    except ValueError:
-        return jsonify({"error": "Invalid request parameters"}), 400
-    return jsonify(list_comments(article_id, limit=limit, offset=offset, decision=decision, sort=sort))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    try:
+        return jsonify(list_comments(article_id, limit=limit, offset=offset, decision=decision, sort=sort))
+    except Exception as exc:
+        logger.error(f"Failed to list comments for {article_id}: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
 
 @api.route("/articles/<article_id>/comments/<comment_id>", methods=["GET"])
 def comment_detail(article_id, comment_id):
-    return jsonify(get_comment_detail(article_id, comment_id))
+    try:
+        payload = get_comment_detail(article_id, comment_id)
+    except Exception as exc:
+        logger.error(f"Failed to fetch comment {comment_id}: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to retrieve comment"}), 500
+    if not payload:
+        return jsonify({"error": "Comment not found"}), 404
+    return jsonify(payload)
+
+
+@api.route("/articles/<article_id>/comments/<comment_id>", methods=["PATCH"])
+def update_comment(article_id, comment_id):
+    payload = request.get_json() or {}
+    decision = payload.get("decision", "").strip()
+    if decision not in VALID_DECISIONS:
+        return jsonify({"error": f"decision must be one of {sorted(VALID_DECISIONS)}"}), 400
+    try:
+        update_comment_decision(article_id, comment_id, decision)
+    except Exception as exc:
+        logger.error(f"Failed to update decision for comment {comment_id}: {exc}", exc_info=True)
+        return jsonify({"error": "Failed to update comment decision"}), 500
+    return jsonify({"status": "ok", "decision": decision})

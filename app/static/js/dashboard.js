@@ -25,7 +25,6 @@ async function loadEvaluation() {
     renderRoc(data.roc_curve || {}, rocImage);
     renderPr(data.pr_curve || {}, prImage);
     renderPerturbation(data.perturbation || []);
-    renderComparison(data);
     renderArtifacts(data.artifacts || {}, data);
   } catch (err) {
     const metricsGrid = document.getElementById("metricsGrid");
@@ -63,6 +62,7 @@ async function initModelSelect() {
       select.value = select.options[0].value;
       await loadEvaluation();
     }
+    loadComparison(models);
   } catch (err) {
     select.innerHTML = `<option value="">Error: ${err.message}</option>`;
     const metricsGrid = document.getElementById("metricsGrid");
@@ -159,11 +159,12 @@ function renderConfusionMatrix(matrixPayload) {
 function renderRoc(curve, imageUrl) {
   const container = document.getElementById("rocContainer");
   const canvas = document.getElementById("rocChart");
-  
+
   if (!container) return;
-  
+
   if (imageUrl) {
-    container.innerHTML = `<img src="${imageUrl}" alt="ROC curve" style="max-width: 100%; height: auto;">`;
+    container.style.height = "auto";
+    container.innerHTML = `<img src="${imageUrl}" alt="ROC curve">`;
     return;
   }
   
@@ -183,19 +184,37 @@ function renderRoc(curve, imageUrl) {
       type: "line",
       data: {
         labels: curve.fpr,
-        datasets: [{
-          label: "ROC",
-          data: curve.tpr,
-          borderColor: "#3366cc",
-          tension: 0.4,
-          fill: false
-        }]
+        datasets: [
+          {
+            label: "ROC Curve",
+            data: curve.tpr,
+            borderColor: "#3366cc",
+            backgroundColor: "rgba(51,102,204,0.08)",
+            tension: 0.3,
+            fill: true,
+            pointRadius: 0,
+          },
+          {
+            label: "Random classifier",
+            data: curve.fpr,
+            borderColor: "#aaa",
+            borderDash: [5, 5],
+            tension: 0,
+            fill: false,
+            pointRadius: 0,
+          }
+        ]
       },
       options: {
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         plugins: {
-          legend: { display: true }
+          legend: { display: true, position: "bottom" },
+          tooltip: { mode: "index", intersect: false },
+        },
+        scales: {
+          x: { title: { display: true, text: "False Positive Rate" }, ticks: { maxTicksLimit: 6 } },
+          y: { title: { display: true, text: "True Positive Rate" }, min: 0, max: 1 },
         }
       }
     });
@@ -208,11 +227,12 @@ function renderRoc(curve, imageUrl) {
 function renderPr(curve, imageUrl) {
   const container = document.getElementById("prContainer");
   const canvas = document.getElementById("prChart");
-  
+
   if (!container) return;
-  
+
   if (imageUrl) {
-    container.innerHTML = `<img src="${imageUrl}" alt="PR curve" style="max-width: 100%; height: auto;">`;
+    container.style.height = "auto";
+    container.innerHTML = `<img src="${imageUrl}" alt="PR curve">`;
     return;
   }
   
@@ -233,18 +253,25 @@ function renderPr(curve, imageUrl) {
       data: {
         labels: curve.recall,
         datasets: [{
-          label: "PR",
+          label: "Precision-Recall",
           data: curve.precision,
           borderColor: "#c43b3b",
-          tension: 0.4,
-          fill: false
+          backgroundColor: "rgba(196,59,59,0.08)",
+          tension: 0.3,
+          fill: true,
+          pointRadius: 0,
         }]
       },
       options: {
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         plugins: {
-          legend: { display: true }
+          legend: { display: true, position: "bottom" },
+          tooltip: { mode: "index", intersect: false },
+        },
+        scales: {
+          x: { title: { display: true, text: "Recall" }, min: 0, max: 1, ticks: { maxTicksLimit: 6 } },
+          y: { title: { display: true, text: "Precision" }, min: 0, max: 1 },
         }
       }
     });
@@ -257,9 +284,11 @@ function renderPr(curve, imageUrl) {
 function renderPerturbation(data) {
   const canvas = document.getElementById("perturbChart");
   if (!canvas) return;
-  
+
   if (!data || data.length === 0) {
-    canvas.parentElement.innerHTML = "<p>No perturbation data available.</p>";
+    const p = canvas.parentElement;
+    p.style.height = "auto";
+    p.innerHTML = "<p>No perturbation data available.</p>";
     return;
   }
 
@@ -270,16 +299,22 @@ function renderPerturbation(data) {
       data: {
         labels: data.map(d => d.feature),
         datasets: [{
-          label: "Importance",
+          label: "Permutation Importance",
           data: data.map(d => d.importance),
-          backgroundColor: "#6a5acd"
+          backgroundColor: data.map(d => d.importance >= 0 ? "#6a5acd" : "#c43b3b"),
         }]
       },
       options: {
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
+        indexAxis: "y",
         plugins: {
-          legend: { display: true }
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x.toFixed(4)}` } },
+        },
+        scales: {
+          x: { title: { display: true, text: "Accuracy drop when feature is permuted" } },
+          y: { ticks: { font: { family: "monospace", size: 11 } } },
         }
       }
     });
@@ -289,39 +324,138 @@ function renderPerturbation(data) {
   }
 }
 
-function renderComparison(data) {
-  const canvas = document.getElementById("compareChart");
-  if (!canvas) return;
-  
-  if (!data || !data.metrics || Object.keys(data.metrics).length === 0) {
-    canvas.parentElement.innerHTML = "<p>No comparison data available.</p>";
-    return;
+const COMPARE_METRICS = [
+  { key: "accuracy",  label: "Accuracy",  default: true  },
+  { key: "f1",        label: "F1 Score",  default: true  },
+  { key: "precision", label: "Precision", default: true  },
+  { key: "recall",    label: "Recall",    default: true  },
+  { key: "roc_auc",   label: "ROC AUC",   default: false },
+  { key: "pr_auc",    label: "PR AUC",    default: false },
+];
+
+const MODEL_COLORS = [
+  "rgba(59,111,196,0.82)",
+  "rgba(44,160,44,0.82)",
+  "rgba(230,118,46,0.82)",
+  "rgba(148,103,189,0.82)",
+  "rgba(214,39,40,0.82)",
+];
+
+function loadComparison(models) {
+  if (!models || models.length === 0) return;
+
+  const activeMetrics = new Set(COMPARE_METRICS.filter(m => m.default).map(m => m.key));
+
+  function rebuildChart() {
+    const canvas = document.getElementById("compareChart");
+    if (!canvas) return;
+
+    const selected = COMPARE_METRICS.filter(m => activeMetrics.has(m.key));
+    // X-axis = metric groups; within each group one bar per model
+    const labels = selected.map(m => m.label);
+
+    const datasets = models.map((model, i) => ({
+      label: model.model_name,
+      data: selected.map(m => model.metrics?.[m.key] ?? null),
+      backgroundColor: MODEL_COLORS[i % MODEL_COLORS.length],
+      borderRadius: 3,
+      borderSkipped: false,
+    }));
+
+    try {
+      if (compareChart) compareChart.destroy();
+      compareChart = new Chart(canvas, {
+        type: "bar",
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: "bottom",
+              labels: { boxWidth: 12, padding: 14, font: { size: 12 } },
+            },
+            tooltip: {
+              callbacks: {
+                label: ctx => ` ${ctx.dataset.label}: ${Number(ctx.parsed.y).toFixed(4)}`,
+              },
+            },
+          },
+          scales: {
+            x: { ticks: { font: { size: 12 } } },
+            y: {
+              min: 0, max: 1,
+              title: { display: true, text: "Score" },
+              ticks: { callback: v => v.toFixed(2) },
+            },
+          },
+        },
+      });
+    } catch (err) {
+      console.error("Comparison chart error:", err);
+    }
   }
 
-  try {
-    if (compareChart) compareChart.destroy();
-    compareChart = new Chart(canvas, {
-      type: "bar",
-      data: {
-        labels: Object.keys(data.metrics),
-        datasets: [{
-          label: "Metrics",
-          data: Object.values(data.metrics),
-          backgroundColor: "#3b6fc4"
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { display: true }
+  function renderToggles() {
+    const wrap = document.getElementById("compareMetricToggles");
+    if (!wrap) return;
+    wrap.innerHTML = COMPARE_METRICS.map(m =>
+      `<button class="compare-toggle${activeMetrics.has(m.key) ? " active" : ""}"
+               data-key="${m.key}">${m.label}</button>`
+    ).join("");
+    wrap.querySelectorAll(".compare-toggle").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const k = btn.dataset.key;
+        if (activeMetrics.has(k)) {
+          if (activeMetrics.size > 1) activeMetrics.delete(k);
+        } else {
+          activeMetrics.add(k);
         }
-      }
+        renderToggles();
+        rebuildChart();
+        renderCompareTable(models);
+      });
     });
-  } catch (err) {
-    console.error("Error rendering comparison chart:", err);
-    canvas.parentElement.innerHTML = `<p>Error rendering chart: ${err.message}</p>`;
   }
+
+  renderToggles();
+  rebuildChart();
+  renderCompareTable(models);
+}
+
+function renderCompareTable(models) {
+  const container = document.getElementById("compareTable");
+  if (!container || !models || models.length === 0) return;
+
+  const allMetrics = COMPARE_METRICS;
+
+  // Find best value per metric column
+  const best = {};
+  allMetrics.forEach(m => {
+    best[m.key] = Math.max(...models.map(mo => mo.metrics?.[m.key] ?? 0));
+  });
+
+  const headerCells = allMetrics.map(m => `<th>${m.label}</th>`).join("");
+  const rows = models.map((model, i) => {
+    const swatch = `<span class="ct-swatch" style="background:${MODEL_COLORS[i % MODEL_COLORS.length]}"></span>`;
+    const cells = allMetrics.map(m => {
+      const v = model.metrics?.[m.key];
+      if (v == null) return `<td>—</td>`;
+      const isBest = Math.abs(v - best[m.key]) < 0.00001;
+      return `<td class="${isBest ? "ct-best" : ""}">${v.toFixed(4)}</td>`;
+    }).join("");
+    return `<tr><td class="ct-name">${swatch}${model.model_name}</td>${cells}</tr>`;
+  }).join("");
+
+  container.innerHTML = `
+    <div class="ct-wrap">
+      <table class="ct-table">
+        <thead><tr><th>Model</th>${headerCells}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p class="ct-note">Bold = best score in column across all models.</p>
+    </div>`;
 }
 
 document.addEventListener("DOMContentLoaded", initModelSelect);

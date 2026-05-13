@@ -23,12 +23,14 @@
       <p><strong>Triggered rule:</strong> <span id="triggeredRule"></span></p>
       <p><strong>Model Name:</strong> <span id="modelName"></span></p>
       <p><strong>Model confidence:</strong> <span id="commentConfidence"></span></p>
+      <p><strong>Inference time:</strong> <span id="inferenceTime"></span></p>
       <p><strong>Current auto-threshold:</strong> <span id="autoThresholdInfo"></span></p>
       <p><strong>Current manual threshold:</strong> <span id="manualThresholdInfo"></span></p>
       <p><strong>Decision mode:</strong> <span id="decisionMode"></span></p>
 
-      <h3>Top contributing features (SHAP)</h3>
-      <ul id="featureList"></ul>
+      <h3>What drove this prediction</h3>
+      <p class="shap-intro">Each factor below pushed the model's score up (toward toxic) or down (toward safe). Longer bars mean a stronger influence.</p>
+      <div id="featureList"></div>
     </div>
   </section>
 </main>

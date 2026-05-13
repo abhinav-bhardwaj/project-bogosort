@@ -1,3 +1,23 @@
+"""
+eda.py — routes for exploratory data analysis visualizations
+
+This module serves precomputed EDA statistics and visualizations through both
+HTML views and JSON API endpoints.
+
+EDA computation is intentionally separated from request-time rendering because
+statistical preprocessing and feature aggregation are expensive operations.
+Caching results avoids recomputing analytics on every request.
+
+EDA data is loaded lazily into the Flask application context to minimize startup
+cost and prevent repeated disk reads across requests.
+
+The module exposes both rendered pages and lightweight API endpoints because:
+- templates need structured dashboard data,
+- frontend components may request subsets independently,
+- analytics can be reused outside the dashboard UI.
+
+"""
+
 from flask import Blueprint, render_template, jsonify, current_app
 import json
 import logging

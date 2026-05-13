@@ -1,15 +1,31 @@
 """
-Wikipedia Talk Page Comment Fetcher
+Wikipedia Talk Page Comment Fetcher and Comment Parser Server 
 
-This module provides utilities to fetch and parse comments from Wikipedia talk pages
-using the MediaWiki API. It handles both the old and new API response formats.
+This module provides a robust interface for retrieving, parsing, and exporting
+discussion comments from Wikipedia talk pages using the MediaWiki API. It handles 
+both the old and new API response formats.
 
-Key improvements:
-- Supports both URL input and page titles
+The service is designed to support downstream moderation, toxicity analysis,
+research workflows, and dataset generation by converting raw Wikipedia talk
+page wikitext into structured comment objects.
+
+Core responsibilities and implementation details:
+- Fetches raw talk page content from Wikipedia
+- Parses signed and unsigned discussion comments
+- Extracts metadata such as author, timestamps, section titles, and indentation
+- Supports multiple parsing methods (wikitext and HTML)
+- Handles Wikipedia API rate limiting with exponential backoff
+- Exports parsed comments into JSON, CSV, or plain text formats
+- Provides helper utilities for quick integration into services and scripts
 - Handles both old API format (revisions[0]["*"]) and new format (revisions[0]["slots"]["main"]["*"])
+- Supports both URL input and page titles
 - Robust error handling with exponential backoff
-- Improved wikitext parsing for real Wikipedia talk pages
-- Supports export to JSON, CSV, and plain text
+
+Used by:
+    - wiki_client.py
+    - article ingestion services
+    - moderation pipelines
+    - offline dataset generation scripts
 """
 
 import requests

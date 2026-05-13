@@ -1,4 +1,5 @@
-"""Heavy feature-importance analyses (permutation + SHAP) and a coef CSV.
+"""
+feature_evaluation.py - heavy feature-importance analyses (permutation + SHAP) and a coef CSV
 
 The basic feature-importance plot (model.coef_ or model.feature_importances_) is
 already produced by evaluator.py during run_all.py and saved as

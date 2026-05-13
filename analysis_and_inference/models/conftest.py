@@ -1,7 +1,29 @@
-"""Shared pytest fixtures for models smoke tests.
+"""
+conftest.py — shared pytest fixtures for model smoke tests
 
-Pytest auto-loads this file, so every test in any subfolder gets these
-fixtures and the project root is on sys.path.
+This module centralizes reusable pytest fixtures so all model tests share
+the same lightweight synthetic dataset and environment setup.
+
+Using a shared fixture avoids duplicated test data definitions across files
+and guarantees consistent testing conditions between models.
+
+
+The fixture uses a small balanced dataset of toxic and non-toxic comments
+to keep smoke tests fast, deterministic, and independent of external files.
+This allows tests to validate pipeline behavior, prediction flow, and sklearn
+compatibility without requiring full dataset loading or expensive training.
+
+The dataset is intentionally minimal because the goal is not benchmarking
+model quality, but verifying that pipelines:
+- fit successfully,
+- produce valid predictions,
+- expose expected sklearn interfaces.
+
+The project root is added dynamically to sys.path so tests remain runnable
+from any working directory without manual path configuration.
+
+Run with: Automatically loaded by pytest for all tests in the project.
+
 """
 
 import os

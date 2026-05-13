@@ -1,3 +1,19 @@
+"""
+ridge.py — L2-regularized logistic regression for toxicity classification
+
+This module trains a ridge logistic regression model on the engineered feature
+space. We chose L2 regularization because it stabilizes coefficient estimates
+while retaining information from correlated features.
+
+The model is wrapped in the shared pipeline and grid search utilities so
+training, tuning, evaluation, and serialization remain consistent across all
+models in the project.
+
+Class balancing is enabled to better handle the toxicity label imbalance.
+
+Run with: uv run python analysis_and_inference/models/ridge_log_reg/ridge.py
+"""
+
 import os
 import sys
 

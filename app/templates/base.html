@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>{% block title %}Wiki Toxicity ML{% endblock %}</title>
+  <title>{% block title %}ThermoTox{% endblock %}</title>
+  <link rel="icon" type="image/png" href="/static/thermotox-logo.png">
+  <link rel="apple-touch-icon" href="/static/thermotox-logo.png">
   <link rel="stylesheet" href="/static/styles/global.css">
   <link rel="stylesheet" href="/static/styles/layout.css">
   <link rel="stylesheet" href="/static/styles/banner.css">
@@ -33,16 +35,16 @@
 
   <header class="topbar">
     <div class="topbar-inner">
-      <div class="brand">
-        <span class="brand-logo">Σ</span>
-        Wiki Toxicity ML
-      </div>
+      <a href="/" class="brand">
+        <img src="/static/thermotox-logo.png" alt="ThermoTox" class="brand-logo-img">
+      </a>
       <div class="top-links">
         <a href="/">Home</a>
         <a href="/analyze/">Analyse</a>
         <a href="/eda/">EDA</a>
         <a href="/dashboard/nerdy/">Models</a>
-        <a href="/bogosort/">Bogosort</a>
+        <a href="/demo/">Live Demo</a>
+        <a href="/sort-demo/">Sort Demo</a>
         <a href="/about/">About</a>
       </div>
     </div>

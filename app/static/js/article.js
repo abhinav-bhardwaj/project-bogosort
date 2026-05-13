@@ -1,3 +1,47 @@
+const FEATURE_LABELS = {
+  // Sentiment
+  vader_compound:      { label: "Overall sentiment",          fmt: v => v.toFixed(2) + " (−1 = very negative, +1 = positive)" },
+  vader_neg:           { label: "Negative tone",              fmt: v => (v * 100).toFixed(0) + "% of text" },
+  vader_pos:           { label: "Positive tone",              fmt: v => (v * 100).toFixed(0) + "% of text" },
+  vader_is_negative:   { label: "Negative tone detected",     fmt: v => v === 1 ? "Yes" : "No" },
+  vader_intensity:     { label: "Emotional intensity",        fmt: v => v.toFixed(2) + " (0 = neutral, 1 = peak)" },
+  vader_pos_minus_neg: { label: "Net sentiment",              fmt: v => (v >= 0 ? "+" : "") + v.toFixed(2) },
+  // Second person
+  has_second_person:     { label: "Directly addresses someone",  fmt: v => v === 1 ? "Yes" : "No" },
+  second_person_count:   { label: 'Words like "you" / "your"',   fmt: v => v + " word" + (v !== 1 ? "s" : "") },
+  second_person_density: { label: "Direct-address density",      fmt: v => (v * 100).toFixed(1) + "% of words" },
+  // Profanity
+  profanity_count:            { label: "Profanity words",      fmt: v => v + " word" + (v !== 1 ? "s" : "") },
+  obfuscated_profanity_count: { label: "Disguised profanity",  fmt: v => v + " word" + (v !== 1 ? "s" : "") },
+  // Slang
+  slang_count: { label: "Toxic slang terms", fmt: v => v + " term" + (v !== 1 ? "s" : "") },
+  // Text shape
+  char_count:        { label: "Comment length",       fmt: v => v + " characters" },
+  word_count:        { label: "Word count",            fmt: v => v + " word" + (v !== 1 ? "s" : "") },
+  exclamation_count: { label: "Exclamation marks",    fmt: v => v },
+  uppercase_ratio:   { label: "ALL CAPS proportion",  fmt: v => (v * 100).toFixed(0) + "% of words" },
+  unique_word_ratio: { label: "Vocabulary variety",   fmt: v => (v * 100).toFixed(0) + "% unique words" },
+  // Elongation & punctuation
+  elongated_token_count:   { label: "Exaggerated words",      fmt: v => v + " word" + (v !== 1 ? "s" : "") + ' (e.g. "soooo")' },
+  consecutive_punct_count: { label: "Repeated punctuation",   fmt: v => v + ' run' + (v !== 1 ? "s" : "") + ' (e.g. "!!!")' },
+  // URLs & IPs
+  url_count:     { label: "Links included",          fmt: v => v },
+  ip_count:      { label: "IP addresses mentioned",  fmt: v => v },
+  has_url_or_ip: { label: "Contains link or IP",     fmt: v => v === 1 ? "Yes" : "No" },
+  // Syntactic
+  negation_count:      { label: 'Negation words (e.g. "not", "never")', fmt: v => v + " word" + (v !== 1 ? "s" : "") },
+  sentence_count:      { label: "Number of sentences",                   fmt: v => v },
+  avg_sentence_length: { label: "Average sentence length",               fmt: v => v.toFixed(1) + " words" },
+  // Identity mentions
+  identity_mention_count: { label: "Identity group mentions",      fmt: v => v + " mention" + (v !== 1 ? "s" : "") },
+  identity_race:          { label: "Mentions race or ethnicity",   fmt: v => v === 1 ? "Yes" : "No" },
+  identity_gender:        { label: "Mentions gender",              fmt: v => v === 1 ? "Yes" : "No" },
+  identity_sexuality:     { label: "Mentions sexual orientation",  fmt: v => v === 1 ? "Yes" : "No" },
+  identity_religion:      { label: "Mentions religion",            fmt: v => v === 1 ? "Yes" : "No" },
+  identity_disability:    { label: "Mentions disability",          fmt: v => v === 1 ? "Yes" : "No" },
+  identity_nationality:   { label: "Mentions nationality / origin", fmt: v => v === 1 ? "Yes" : "No" },
+};
+
 let articleCharts = {};
 const DEFAULT_AUTO_THRESHOLD = 0.75;
 const DEFAULT_MANUAL_THRESHOLD = 0.55;
@@ -251,9 +295,27 @@ async function initArticlePage() {
     document.getElementById("articleTitle").textContent = article.title;
     const articleLink = document.getElementById("articleLink");
     articleLink.href = article.url;
-    articleLink.textContent = article.url;
-    document.getElementById("articleSummary").textContent = article.summary || "";
+
+    const summaryEl = document.getElementById("articleSummary");
+    const summaryToggle = document.getElementById("summaryToggle");
+    const fullSummary = article.summary || "";
+    const SUMMARY_MAX = 200;
+    if (fullSummary.length > SUMMARY_MAX) {
+      const shortSummary = fullSummary.slice(0, SUMMARY_MAX).trimEnd() + "…";
+      summaryEl.textContent = shortSummary;
+      summaryToggle.hidden = false;
+      let expanded = false;
+      summaryToggle.addEventListener("click", () => {
+        expanded = !expanded;
+        summaryEl.textContent = expanded ? fullSummary : shortSummary;
+        summaryToggle.textContent = expanded ? "Show less" : "Show more";
+      });
+    } else {
+      summaryEl.textContent = fullSummary;
+    }
     document.getElementById("articleError").textContent = "";
+
+    renderInferenceStats(article.inference_stats || {});
 
     const autoThreshold   = document.getElementById("autoThreshold");
     const manualThreshold = document.getElementById("manualThreshold");
@@ -321,9 +383,10 @@ async function loadQueue(articleId, queue) {
 function renderQueue(tableId, rows, mode, errorMessage = null) {
   const tbody = document.querySelector(`#${tableId} tbody`);
   tbody.innerHTML = "";
+  const articleId = document.body.dataset.articleId;
 
   if (errorMessage) {
-    tbody.innerHTML = `<tr><td colspan="5">Failed to load comments: ${errorMessage}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5">Failed to load: ${errorMessage}</td></tr>`;
     return;
   }
   if (!rows.length) {
@@ -333,20 +396,157 @@ function renderQueue(tableId, rows, mode, errorMessage = null) {
 
   rows.forEach(row => {
     const tr = document.createElement("tr");
-    let decisionCell =
-      mode === "auto"   ? `<span class="badge danger">Auto-ban</span>` :
-      mode === "manual" ? `<button class="btn small danger">Ban</button> <button class="btn small">Not ban</button> <span class="badge neutral">Pending</span>` :
-      row.decision === "auto-ban"      ? `<span class="badge danger">Auto-ban</span>` :
-      row.decision === "manual-review" ? `<span class="badge neutral">Manual review</span>` :
-                                         `<span class="badge neutral">None</span>`;
-    tr.innerHTML = `
-      <td>${formatTimestamp(row.timestamp)}</td>
-      <td>${row.author}</td>
-      <td><a href="/articles/${document.body.dataset.articleId}/comments/${row.id}/">${row.text}</a></td>
-      <td>${row.toxicity.toFixed(3)}</td>
-      <td>${decisionCell}</td>`;
+
+    const tsCell = document.createElement("td");
+    tsCell.textContent = formatTimestamp(row.timestamp);
+    tr.appendChild(tsCell);
+
+    const authorCell = document.createElement("td");
+    authorCell.textContent = row.author;
+    tr.appendChild(authorCell);
+
+    tr.appendChild(buildCommentCell(row, articleId));
+
+    const toxCell = document.createElement("td");
+    toxCell.textContent = row.toxicity.toFixed(3);
+    tr.appendChild(toxCell);
+
+    tr.appendChild(buildActionCell(row, mode, articleId));
+
     tbody.appendChild(tr);
   });
+}
+
+function buildCommentCell(row, articleId) {
+  const td = document.createElement("td");
+  const MAX = 120;
+  const text = row.text || "";
+
+  const a = document.createElement("a");
+  a.href = `/articles/${articleId}/comments/${row.id}/`;
+
+  if (text.length <= MAX) {
+    a.textContent = text;
+    td.appendChild(a);
+    return td;
+  }
+
+  const shortSpan = document.createElement("span");
+  shortSpan.textContent = text.slice(0, MAX).trimEnd() + "…";
+
+  const fullSpan = document.createElement("span");
+  fullSpan.textContent = text;
+  fullSpan.hidden = true;
+
+  a.appendChild(shortSpan);
+  a.appendChild(fullSpan);
+  td.appendChild(a);
+
+  const toggle = document.createElement("button");
+  toggle.className = "comment-toggle";
+  toggle.textContent = "more";
+  toggle.addEventListener("click", e => {
+    e.preventDefault();
+    const nowExpanded = !fullSpan.hidden;
+    fullSpan.hidden = nowExpanded;
+    shortSpan.hidden = !nowExpanded;
+    toggle.textContent = nowExpanded ? "more" : "less";
+  });
+  td.appendChild(document.createTextNode(" "));
+  td.appendChild(toggle);
+  return td;
+}
+
+function buildActionCell(row, mode, articleId) {
+  const td = document.createElement("td");
+
+  if (mode === "auto") {
+    td.innerHTML = `<span class="badge danger">Auto-ban</span>`;
+    return td;
+  }
+
+  if (mode === "manual") {
+    const d = row.decision;
+    if (d === "auto-ban") {
+      td.innerHTML = `<span class="badge danger">Banned</span>`;
+    } else if (d === "none") {
+      td.innerHTML = `<span class="badge success">Not banned</span>`;
+    } else {
+      const banBtn = document.createElement("button");
+      banBtn.className = "btn small danger";
+      banBtn.textContent = "Ban";
+
+      const notBanBtn = document.createElement("button");
+      notBanBtn.className = "btn small";
+      notBanBtn.textContent = "Not ban";
+
+      const badge = document.createElement("span");
+      badge.className = "badge neutral";
+      badge.textContent = "Pending";
+
+      const act = decision => async () => {
+        banBtn.disabled = notBanBtn.disabled = true;
+        badge.textContent = "Saving…";
+        try {
+          const res = await fetch(`/api/articles/${articleId}/comments/${row.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ decision })
+          });
+          if (!res.ok) throw new Error(await readErrorMessage(res));
+          td.innerHTML = decision === "manual-ban"
+            ? `<span class="badge manual-ban">Manually banned</span>`
+            : `<span class="badge success">Not banned</span>`;
+        } catch (err) {
+          banBtn.disabled = notBanBtn.disabled = false;
+          badge.textContent = "Error";
+          badge.className = "badge danger";
+        }
+      };
+
+      banBtn.addEventListener("click", act("manual-ban"));
+      notBanBtn.addEventListener("click", act("none"));
+
+      td.appendChild(banBtn);
+      td.appendChild(document.createTextNode(" "));
+      td.appendChild(notBanBtn);
+      td.appendChild(document.createTextNode(" "));
+      td.appendChild(badge);
+    }
+    return td;
+  }
+
+  // "all" mode
+  const label =
+    row.decision === "auto-ban"      ? `<span class="badge danger">Auto-ban</span>` :
+    row.decision === "manual-ban"    ? `<span class="badge manual-ban">Manually banned</span>` :
+    row.decision === "manual-review" ? `<span class="badge warning">Pending review</span>` :
+    row.decision === "none"          ? `<span class="badge success">Not banned</span>` :
+                                       `<span class="badge neutral">None</span>`;
+  td.innerHTML = label;
+  return td;
+}
+
+function renderInferenceStats(stats) {
+  const el = document.getElementById("inferenceStats");
+  if (!el) return;
+  if (!stats || !stats.count) {
+    el.hidden = true;
+    return;
+  }
+  const totalSec = (stats.total_ms / 1000).toFixed(2);
+  el.hidden = false;
+  el.innerHTML = `
+    <span class="inf-stat" title="Comments scored">⚙ ${stats.count} scored</span>
+    <span class="inf-sep">·</span>
+    <span class="inf-stat" title="Average inference time per comment">avg ${stats.avg_ms} ms/comment</span>
+    <span class="inf-sep">·</span>
+    <span class="inf-stat" title="Fastest inference">min ${stats.min_ms} ms</span>
+    <span class="inf-sep">·</span>
+    <span class="inf-stat" title="Slowest inference">max ${stats.max_ms} ms</span>
+    <span class="inf-sep">·</span>
+    <span class="inf-stat" title="Total inference wall time">total ${totalSec} s</span>
+  `;
 }
 
 function updateThresholdLabels() {
@@ -409,6 +609,11 @@ async function initCommentPage() {
       decision === "auto-ban"      ? `toxicity ≥ ${auto_threshold}` :
       decision === "manual-review" ? `toxicity ≥ ${manual_threshold}` : "Below thresholds";
     document.getElementById("commentConfidence").textContent   = toxicity.toFixed(3);
+    const inferenceEl = document.getElementById("inferenceTime");
+    if (inferenceEl) {
+      const ms = payload.comment.inference_ms;
+      inferenceEl.textContent = ms > 0 ? `${ms.toFixed(2)} ms` : "—";
+    }
     document.getElementById("autoThresholdInfo").textContent   = auto_threshold.toFixed(2);
     document.getElementById("manualThresholdInfo").textContent = manual_threshold.toFixed(2);
     document.getElementById("modelName").textContent           = model_name;
@@ -418,13 +623,33 @@ async function initCommentPage() {
     const featureList = document.getElementById("featureList");
     featureList.innerHTML = "";
     if (!features.length) {
-      featureList.innerHTML = "<li>No explanation available yet.</li>";
+      featureList.innerHTML = "<p class='shap-empty'>No explanation available yet.</p>";
       return;
     }
+
+    const maxShap = Math.max(...features.map(f => Math.abs(f.shap)));
+
     features.forEach(f => {
-      const li = document.createElement("li");
-      li.textContent = `${f.feature}: value=${f.value.toFixed(2)}, shap=${f.shap >= 0 ? "+" : ""}${f.shap.toFixed(3)}`;
-      featureList.appendChild(li);
+      const meta   = FEATURE_LABELS[f.feature] || { label: f.feature, fmt: v => v.toFixed(3) };
+      const isPos  = f.shap >= 0;
+      const barPct = maxShap > 0 ? (Math.abs(f.shap) / maxShap * 100).toFixed(1) : 0;
+      const shapFmt = (isPos ? "+" : "") + f.shap.toFixed(3);
+
+      const row = document.createElement("div");
+      row.className = "shap-row";
+      row.innerHTML = `
+        <div class="shap-label">${meta.label}<span class="shap-feature-name">${f.feature}</span></div>
+        <div class="shap-bar-track">
+          <div class="shap-bar ${isPos ? "shap-bar-pos" : "shap-bar-neg"}"
+               style="width:${barPct}%"></div>
+        </div>
+        <div class="shap-meta">
+          <span class="shap-direction ${isPos ? "shap-dir-pos" : "shap-dir-neg"}">
+            ${isPos ? "↑ increases risk" : "↓ reduces risk"}
+          </span>
+          <span class="shap-value" title="SHAP value: ${shapFmt}">${meta.fmt(f.value)}</span>
+        </div>`;
+      featureList.appendChild(row);
     });
   } catch (err) {
     document.getElementById("commentDetail").textContent = `Failed to load comment: ${err.message}`;

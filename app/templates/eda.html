@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}EDA Dashboard - Toxicity ML Wiki{% endblock %}
+{% block title %}EDA Dashboard — ThermoTox{% endblock %}
 
 {% block head %}
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
@@ -17,11 +17,15 @@
     <ul>
       <li><a href="#overview-section">Data Overview</a></li>
       <li><a href="#distribution-section">Class Distribution</a></li>
+      <li><a href="#feature-catalog-section">Feature Catalog</a></li>
       <li><a href="#top-features-section">Top Features</a></li>
       <li><a href="#feature-means-section">Feature Means</a></li>
       <li><a href="#feature-occurrence-section">Feature Occurrence</a></li>
+      <li><a href="#identity-risk-section">Identity Risk</a></li>
+      <li><a href="#feature-distribution-section">Distribution Explorer</a></li>
+      <li><a href="#correlation-section">Correlation Heatmap</a></li>
       <li><a href="#split-validation-section">Train-Test Split</a></li>
-      <li><a href="#feature-explorer-section">Feature Explorer</a></li>
+      
     </ul>
   </nav>
 
@@ -56,7 +60,18 @@
         </div>
     </section>
 
-    <!-- SECTION 3: Top Correlated Features -->
+    <!-- SECTION 3: Feature Catalog -->
+    <section id="feature-catalog-section">
+        <h2>Feature Catalog</h2>
+        <div class="insight-box">
+            <strong>What this shows:</strong> All 32 hand-engineered features used for toxicity classification —
+            their exact code names, data types, and what signal each captures.
+            These features are computed from raw comment text at both training and inference time.
+        </div>
+        <div id="feature-catalog-content"></div>
+    </section>
+
+    <!-- SECTION 4: Top Correlated Features -->
     <section id="top-features-section">
         <h2>Top Features by Correlation</h2>
         <div class="insight-box">
@@ -66,35 +81,61 @@
         <div id="top-features-chart" class="chart"></div>
     </section>
 
-    <!-- SECTION 4: Feature Means by Class -->
+    <!-- SECTION 5: Feature Means by Class -->
     <section id="feature-means-section">
         <h2>Feature Means: Toxic vs Non-Toxic</h2>
-        <p>Comparison of feature values between toxic and non-toxic comments (top 10 most discriminative features):</p>
+        <p>Average value of each feature for toxic vs non-toxic comments. Search or sort by difference to find the most discriminative signals.</p>
         <div id="feature-means-table" class="chart"></div>
     </section>
 
-    <!-- SECTION 5: Feature Occurrence Analysis -->
+    <!-- SECTION 6: Feature Occurrence Analysis -->
     <section id="feature-occurrence-section">
         <h2>Feature Occurrence Analysis</h2>
-        <p>How frequently each feature contains non-zero values (top features):</p>
+        <p>How frequently each feature is non-zero, split by class. The gap column shows where toxic comments activate a feature more or less than non-toxic ones.</p>
         <div id="feature-occurrence-table" class="chart"></div>
     </section>
 
-    <!-- SECTION 6: Train-Test Split Validation -->
+    <!-- SECTION 7: Identity Risk Analysis -->
+    <section id="identity-risk-section">
+        <h2>Identity Risk Analysis</h2>
+        <div class="insight-box">
+            <strong>What this shows:</strong> How toxicity rates differ for comments that mention
+            specific identity groups — race, gender, sexuality, religion, disability, and nationality.
+            A relative risk &gt; 1 means comments mentioning that group are more likely to be labelled toxic
+            in the training data, which can introduce model bias in production.
+        </div>
+        <div id="identity-risk-content"></div>
+    </section>
+
+    <!-- SECTION 8: Feature Distribution Explorer -->
+    <section id="feature-distribution-section">
+        <h2>Feature Distribution Explorer</h2>
+        <div class="insight-box">
+            <strong>What this shows:</strong> The actual value distribution for each engineered feature,
+            split by class. Select a feature to see how its values differ between toxic and non-toxic comments.
+            Counts are shown as a percentage of each class so the heavily-imbalanced classes are comparable.
+        </div>
+        <div id="feature-distribution-controls" class="fd-controls"></div>
+        <div id="feature-distribution-chart" class="chart"></div>
+    </section>
+
+    <!-- SECTION 9: Correlation Heatmap -->
+    <section id="correlation-section">
+        <h2>Feature Correlation Heatmap</h2>
+        <div class="insight-box">
+            <strong>What this shows:</strong> Pearson correlation between all 32 engineered features.
+            Values near +1 (red) mean the two features move together; near −1 (blue) they move oppositely;
+            near 0 (white) they are independent. Strongly correlated feature pairs may carry redundant
+            information for the classifier.
+        </div>
+        <div id="correlation-heatmap" class="chart"></div>
+    </section>
+
+        <!-- SECTION 10: Train-Test Split Validation -->
     <section id="split-validation-section">
         <h2>Train-Test Split Validation</h2>
         <p>Verification that the split is representative and leakage-safe:</p>
         <div id="split-validation-table" class="chart"></div>
-    </section>
-
-    <!-- SECTION 7: Feature Explorer -->
-    <section id="feature-explorer-section">
-        <h2>Feature Explorer</h2>
-        <div class="insight-box">
-            <strong>What this shows:</strong> All engineered features in one place — search by name,
-            sort by correlation or class difference, and click any row to see a class-comparison chart.
-        </div>
-        <div id="feature-explorer-table"></div>
     </section>
 
     <footer class="eda-footer" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #999;">

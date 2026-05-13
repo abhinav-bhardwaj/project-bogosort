@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}About — Wiki Toxicity ML{% endblock %}
+{% block title %}About — ThermoTox{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="/static/styles/landing.css">
@@ -14,7 +14,7 @@
     <section class="about-hero card">
       <h1 class="about-title">About the Project</h1>
       <p class="about-lead">
-        <em>Wiki Toxicity ML</em> is an interactive web application for detecting toxic content in
+        <em>ThermoTox</em> is an interactive web application for detecting toxic content in
         Wikipedia talk page discussions. It was built in Spring 2026 by students at the
         <a href="https://www.hertie-school.org" target="_blank" rel="noopener">Hertie School</a> in Berlin
         as part of the <em>Data Structures &amp; Algorithms</em> course in the
@@ -69,35 +69,29 @@
           <thead>
             <tr>
               <th>Model</th>
-              <th>Vectoriser</th>
               <th>Notes</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>Lasso Logistic Regression</td>
-              <td>TF-IDF</td>
               <td>L1-regularised; sparse, interpretable weights</td>
             </tr>
             <tr>
               <td>Ridge Logistic Regression</td>
-              <td>TF-IDF</td>
               <td>L2-regularised; strong baseline</td>
             </tr>
             <tr>
               <td>Linear SVM</td>
-              <td>TF-IDF</td>
               <td>High-dimensional text classification workhorse</td>
             </tr>
             <tr>
-              <td>Gradient Boosting</td>
-              <td>TF-IDF</td>
-              <td>Ensemble of decision trees; captures non-linearities</td>
+              <td>Random Forest</td>
+              <td>Random ensemble of decision trees</td>
             </tr>
             <tr>
-              <td>Naïve Bayes</td>
-              <td>TF-IDF</td>
-              <td>Probabilistic; fast and competitive on text</td>
+              <td>Ensemble</td>
+              <td>Ensemble of Lasso, Ridge, and Random Forest</td>
             </tr>
           </tbody>
         </table>
@@ -110,7 +104,7 @@
       <ul class="tech-list">
         <li><strong>Backend:</strong> Python · Flask · SQLite (via SQLAlchemy)</li>
         <li><strong>ML:</strong> scikit-learn · NumPy · pandas</li>
-        <li><strong>Data fetching:</strong> MediaWiki REST API</li>
+        <li><strong>Data fetching:</strong> Manual Talk Fetch Implementation with MediaWiki REST API</li>
         <li><strong>Frontend:</strong> Vanilla HTML/CSS/JS (Wikipedia-inspired design)</li>
         <li><strong>Testing:</strong> pytest · coverage</li>
       </ul>
@@ -120,38 +114,26 @@
     <section class="card">
       <h2>Team</h2>
       <p class="team-intro">
-        This project was built by seven students from the MDS Public Policy cohort at the Hertie School,
-        proudly named after the worst sorting algorithm in existence — <strong>Bogosort</strong>.
+        Built by seven students from the MDS Public Policy cohort at the Hertie School —
+        team Bogosort, now building <strong>ThermoTox</strong>.
       </p>
       <div class="team-grid">
+        {% for member in team %}
         <div class="team-card">
-          <div class="team-avatar">BR</div>
-          <div class="team-name">Bianca Rosca-Mayer</div>
+          {% if member.image %}
+          <img src="/static/{{ member.image }}" alt="{{ member.name }}" class="team-photo"
+               style="object-position: {{ member.photo_position or 'center 20%' }};">
+          {% else %}
+          <div class="team-avatar">{{ member.name.split()[0][0] }}{{ member.name.split()[-1][0] }}</div>
+          {% endif %}
+          <div class="team-card-body">
+            <div class="team-name">{{ member.name }}</div>
+            {% if member.bio %}
+            <p class="team-bio">{{ member.bio }}</p>
+            {% endif %}
+          </div>
         </div>
-        <div class="team-card">
-          <div class="team-avatar">HK</div>
-          <div class="team-name">Helena Kandjumbwa</div>
-        </div>
-        <div class="team-card">
-          <div class="team-avatar">DM</div>
-          <div class="team-name">David Moth</div>
-        </div>
-        <div class="team-card">
-          <div class="team-avatar">AG</div>
-          <div class="team-name">Alexis Grangier</div>
-        </div>
-        <div class="team-card">
-          <div class="team-avatar">AM</div>
-          <div class="team-name">Aarushi Mahajan</div>
-        </div>
-        <div class="team-card">
-          <div class="team-avatar">AD</div>
-          <div class="team-name">Abhinav Dubey</div>
-        </div>
-        <div class="team-card">
-          <div class="team-avatar">KW</div>
-          <div class="team-name">Klaas Wolff</div>
-        </div>
+        {% endfor %}
       </div>
     </section>
 
@@ -160,6 +142,7 @@
       <h2>Course Context</h2>
       <p>
         <strong>Course:</strong> Data Structures &amp; Algorithms · Spring 2026<br>
+        <strong>Instructors:</strong> <a href="https://ddimmery.com/" target="_blank" rel="noopener">Dr. Drew Dimmery</a> <br>
         <strong>Programme:</strong> Master of Data Science for Public Policy<br>
         <strong>Institution:</strong> <a href="https://www.hertie-school.org" target="_blank" rel="noopener">Hertie School</a>, Berlin, Germany
       </p>

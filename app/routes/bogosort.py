@@ -1,3 +1,18 @@
+"""
+bogosort.py — interactive sorting-demo routes for the Flask app
+
+This module provides a visual demonstration of Bogosort and MergeSort using
+Flask routes backed by asynchronous background workers.
+
+Sorting execution is separated from request handling so expensive animations do
+not block the web server thread. This keeps the UI responsive while long-running
+sorts execute independently.
+
+The module intentionally contrasts Bogosort against MergeSort to demonstrate
+algorithmic complexity differences visually rather than only theoretically. 
+It also reveals a time processing difference. 
+"""
+
 from flask import Blueprint, redirect, render_template, url_for, request, session
 import threading
 import time
@@ -8,7 +23,7 @@ from app.services.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
 
-bogosort_demo = Blueprint('bogosort', __name__, url_prefix='/bogosort')
+bogosort_demo = Blueprint('bogosort', __name__, url_prefix='/sort-demo')
 
 session_manager = SessionManager(timeout_minutes=30)
 sorting_threads = {}
@@ -114,7 +129,7 @@ def handle_get():
     if state == 'running':
         # Sorting is in progress - show spinner only
         return render_template(
-            'bogosort.html',
+            'sort-demo.html',
             dist_url=dist_url,
             gif_url=gif_url,
             show_form=False,
@@ -127,7 +142,7 @@ def handle_get():
     elif state == 'done':
         # Sorting completed - show GIF and results
         return render_template(
-            'bogosort.html',
+            'sort-demo.html',
             dist_url=dist_url,
             gif_url=gif_url,
             show_form=False,
@@ -142,7 +157,7 @@ def handle_get():
     elif state == 'error':
         # Error occurred - show form with error message
         return render_template(
-            'bogosort.html',
+            'sort-demo.html',
             dist_url=dist_url,
             gif_url=gif_url,
             show_form=True,
@@ -160,7 +175,7 @@ def handle_get():
             SortingService.save_distribution_plot(words, counts, 'app/static/word_distribution.png')
         except Exception as e:
             return render_template(
-                'bogosort.html',
+                'sort-demo.html',
                 dist_url=dist_url,
                 gif_url=gif_url,
                 show_form=True,
@@ -172,7 +187,7 @@ def handle_get():
             )
 
         return render_template(
-            'bogosort.html',
+            'sort-demo.html',
             dist_url=dist_url,
             gif_url=gif_url,
             show_form=True,

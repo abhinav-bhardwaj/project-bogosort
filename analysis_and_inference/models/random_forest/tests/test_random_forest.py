@@ -1,4 +1,10 @@
-"""Smoke test for the random forest pipeline."""
+"""
+test_random_forest.py - smoke test for the Random Forest pipeline
+
+Checks that the model integrates correctly with the shared pipeline utilities,
+fits successfully, and produces valid predictions and probability outputs.
+
+"""
 
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier

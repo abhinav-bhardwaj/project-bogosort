@@ -1,3 +1,13 @@
+"""
+session_manager.py - utility module for managing temporary in-memory user sorting sessions
+
+This module provides session creation, session retrieval, automatic expiration handling,
+session updates, and the cleanup of inactive sessions
+
+Used by:
+- bogosort.py
+"""
+
 from datetime import datetime, timedelta
 
 
