@@ -32,6 +32,8 @@ N_SHOW = 20
 
 
 def _unwrap(estimator):
+    while hasattr(estimator, "estimator"):
+        estimator = estimator.estimator
     named = getattr(estimator, "named_steps", None)
     if named is not None and "clf" in named:
         return named["clf"]
