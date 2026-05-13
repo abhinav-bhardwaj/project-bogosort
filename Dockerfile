@@ -5,12 +5,10 @@ WORKDIR /app
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev
-RUN uv pip install --python /app/.venv/bin/python gunicorn
+RUN uv export --frozen --no-dev --format requirements-txt -o /tmp/requirements.txt \
+ && uv pip install --system --no-cache -r /tmp/requirements.txt gunicorn
 
 COPY . .
-
-ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 7860
 
