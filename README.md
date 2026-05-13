@@ -1,3 +1,13 @@
+---
+title: Wikipedia Toxic Comment Classifier
+emoji: 🐷
+colorFrom: pink
+colorTo: yellow
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # project-bogosort — Toxic Comment Classifier
 
 ## Overview
