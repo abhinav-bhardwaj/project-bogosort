@@ -1,8 +1,6 @@
 ﻿---
 title: Wikipedia Toxic Comment Classifier
-
 sdk: docker
-
 app_port: 7860
 ---
 
