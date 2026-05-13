@@ -3,9 +3,11 @@ name: CI
 on:
   push:
     branches:
+      - dev
       - app-feature/third-iteration
   pull_request:
     branches:
+      - dev
       - app-feature/third-iteration
 
 env:
@@ -29,3 +31,23 @@ jobs:
 
       - name: Run tests
         run: uv run pytest app/tests/ -v
+
+  deploy:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_NAME: ${{ secrets.HF_NAME }}
+        run: |
+          git push --force \
+            "https://${HF_NAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_NAME}/Wikipedia-Toxic-Comment-Classifier" \
+            HEAD:main
