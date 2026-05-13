@@ -1,4 +1,4 @@
-"""
+﻿"""
 error_analysis.py - error-pattern analysis: FP/FN samples, error patterns by feature, confidence distribution
 
 Run manually for a given model after run_all.py has saved its tuned pipeline:
@@ -131,14 +131,14 @@ def confidence_distribution(y_test, y_pred, scores, threshold, save_dir):
     axes[0].hist(scores[fp_mask], bins=bins, color="tomato",    alpha=0.7, label=f"FP (n={fp_mask.sum()})")
     axes[0].hist(scores[tn_mask], bins=bins, color="steelblue", alpha=0.7, label=f"TN (n={tn_mask.sum()})")
     axes[0].axvline(threshold, color="black", linestyle="--", label=f"Threshold {threshold:.2f}")
-    axes[0].set_title("Non-toxic samples — score distribution")
+    axes[0].set_title("Non-toxic samples - score distribution")
     axes[0].set_xlabel("Score")
     axes[0].legend(); axes[0].grid(alpha=0.3)
 
     axes[1].hist(scores[fn_mask], bins=bins, color="tomato",    alpha=0.7, label=f"FN (n={fn_mask.sum()})")
     axes[1].hist(scores[tp_mask], bins=bins, color="steelblue", alpha=0.7, label=f"TP (n={tp_mask.sum()})")
     axes[1].axvline(threshold, color="black", linestyle="--", label=f"Threshold {threshold:.2f}")
-    axes[1].set_title("Toxic samples — score distribution")
+    axes[1].set_title("Toxic samples - score distribution")
     axes[1].set_xlabel("Score")
     axes[1].legend(); axes[1].grid(alpha=0.3)
 

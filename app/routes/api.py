@@ -1,5 +1,5 @@
-"""
-api.py — REST API routes for moderation, evaluation and article management
+﻿"""
+api.py - REST API routes for moderation, evaluation and article management
 
 This module centralizes all HTTP API endpoints behind a single Flask Blueprint.
 Routes delegate business logic to service-layer modules instead of implementing

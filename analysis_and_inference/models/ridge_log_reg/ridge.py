@@ -1,5 +1,5 @@
-"""
-ridge.py — L2-regularized logistic regression for toxicity classification
+﻿"""
+ridge.py - L2-regularized logistic regression for toxicity classification
 
 This module trains a ridge logistic regression model on the engineered feature
 space. We chose L2 regularization because it stabilizes coefficient estimates

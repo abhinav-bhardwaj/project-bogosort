@@ -1,5 +1,5 @@
-"""
-test_lasso.py — smoke test for the custom L1 logistic regression pipeline
+﻿"""
+test_lasso.py - smoke test for the custom L1 logistic regression pipeline
 
 Checks that the model integrates correctly with the shared pipeline utilities,
 fits without errors, and produces valid predictions and probability scores.

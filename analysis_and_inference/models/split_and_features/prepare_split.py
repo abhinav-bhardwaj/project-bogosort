@@ -1,5 +1,5 @@
-"""
-prepare_split.py — deterministic train/test split preparation for toxicity models
+﻿"""
+prepare_split.py - deterministic train/test split preparation for toxicity models
 
 Reads the raw zipped Jigsaw CSV, keeps only `comment_text` and `toxic`,
 makes a stratified 80/20 split, and saves it to disk so every model

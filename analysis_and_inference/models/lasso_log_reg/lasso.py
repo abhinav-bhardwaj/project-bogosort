@@ -1,5 +1,5 @@
-"""
-lasso.py — training entry point for custom L1 logistic regression
+﻿"""
+lasso.py - training entry point for custom L1 logistic regression
 
 This module trains the project's from-scratch L1-regularized logistic
 regression model using shared preprocessing and evaluation utilities.

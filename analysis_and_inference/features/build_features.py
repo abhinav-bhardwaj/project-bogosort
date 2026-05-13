@@ -1,5 +1,5 @@
-"""
-build_features.py — dense, hand-engineered features for the Jigsaw toxicity dataset.
+﻿"""
+build_features.py - dense, hand-engineered features for the Jigsaw toxicity dataset.
 
 Provides `DenseFeatureTransformer`, an sklearn-compatible (BaseEstimator + TransformerMixin)
 transformer that produces ~32 lexicon- and regex-based features per comment. Stateless:
@@ -85,9 +85,9 @@ _NEGATION_WORDS = frozenset({
     "hadn't", "hasn't", "haven't", "needn't", "mustn't",
 })
 
-# Pre-compiled regex patterns — built once, reused across all rows.
+# Pre-compiled regex patterns - built once, reused across all rows.
 
-# Feature 2 — has_second_person, second_person_count, second_person_density
+# Feature 2 - has_second_person, second_person_count, second_person_density
 # \b = word boundary, ensures "you" does not match inside "youtube".
 _SECOND_PERSON_RE = re.compile(
     r"\b(you|your|yours|yourself|yourselves"
@@ -95,33 +95,33 @@ _SECOND_PERSON_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Feature 8 — url_count, has_url_or_ip
+# Feature 8 - url_count, has_url_or_ip
 _URL_RE = re.compile(r"(?:https?://[^\s]+)|(www\.[^\s]+)", re.IGNORECASE)
 
-# Feature 8 — ip_count, has_url_or_ip
+# Feature 8 - ip_count, has_url_or_ip
 # Each octet validated to 0-255 via alternation pattern.
 _IPV4_RE = re.compile(
     r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}"
     r"(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b"
 )
 
-# Feature 3 — profanity_count
+# Feature 3 - profanity_count
 # Matches whole words made of letters and apostrophes.
 _WORD_RE = re.compile(r"\b[a-zA-Z']+\b")
 
-# Feature 9 — negation_count
+# Feature 9 - negation_count
 # Matches whole words including contractions (e.g. "can't", "wouldn't").
 _NEGATION_RE = re.compile(r"\b\w+(?:'\w+)?\b")
 
-# Feature 7 — elongated_token_count
+# Feature 7 - elongated_token_count
 # Matches any character that repeats 3+ times consecutively (e.g. "coooool").
 _ELONGATE_RE = re.compile(r"(.)\1{2,}", re.IGNORECASE)
 
-# Feature 7 — consecutive_punct_count
+# Feature 7 - consecutive_punct_count
 # Matches runs of 2+ consecutive punctuation characters (e.g. "!!", "???").
 _PUNCT_RE = re.compile(r"[^\w\s]{2,}")
 
-# Feature 9 — sentence_count, avg_sentence_length
+# Feature 9 - sentence_count, avg_sentence_length
 # Splits text into sentences on . ! or ? characters.
 _SENTENCE_RE = re.compile(r"[.!?]+")
 
@@ -130,7 +130,7 @@ _SENTENCE_RE = re.compile(r"[.!?]+")
 # Identity group lexicon
 #
 # Six categories, each compiled into its own regex pattern.
-# Presence alone is a weak signal on Wikipedia data — the feature earns
+# Presence alone is a weak signal on Wikipedia data - the feature earns
 # value in combination with sentiment features.
 # ===========================================================================
 
@@ -250,13 +250,13 @@ _IDENTITY_ALL_RE: re.Pattern = _build_identity_pattern([
 
 
 # ===========================================================================
-# Row-level feature functions (private — called by DenseFeatureTransformer)
+# Row-level feature functions (private - called by DenseFeatureTransformer)
 # Each accepts a single pre-cleaned string and returns a scalar or dict.
 # ===========================================================================
 
 # --- 1. Sentiment ---
 # SentimentIntensityAnalyzer loads a lexicon from disk. Using it as a
-# default argument creates it once at function definition time — not per call.
+# default argument creates it once at function definition time - not per call.
 def _extract_sentiment(text: str, _sia=SentimentIntensityAnalyzer()) -> dict:
     scores   = _sia.polarity_scores(text)
     compound = scores["compound"]
@@ -293,7 +293,7 @@ def _profanity_count(text: str) -> int:
     return sum(1 for t in tokens if t in _PROFANITY_LEXICON)
 
 def _obfuscated_profanity_count(text: str) -> int:
-    # Counts tokens that only match the lexicon after leetspeak translation —
+    # Counts tokens that only match the lexicon after leetspeak translation -
     # i.e. the word was intentionally obfuscated to evade a plain filter.
     count = 0
     for raw in text.split():
@@ -369,14 +369,14 @@ def _extract_identity(text: str) -> dict:
 
 
 # ===========================================================================
-# DenseFeatureTransformer — sklearn-compatible (BaseEstimator + TransformerMixin)
+# DenseFeatureTransformer - sklearn-compatible (BaseEstimator + TransformerMixin)
 # Stateless: fit() returns self, transform() computes all features per-row.
 # ===========================================================================
 
 class DenseFeatureTransformer(BaseEstimator, TransformerMixin):
     """
     Computes all row-level features and appends them as new columns.
-    Stateless — fit() does nothing, transform() applies all feature functions.
+    Stateless - fit() does nothing, transform() applies all feature functions.
 
     Input : pd.DataFrame with a 'comment_text' column.
     Output: pd.DataFrame with all original columns + feature columns appended.
@@ -396,7 +396,7 @@ class DenseFeatureTransformer(BaseEstimator, TransformerMixin):
         df[TEXT_COL] = df[TEXT_COL].fillna("").astype(str)
         texts        = df[TEXT_COL].tolist()
 
-        # Single pass through all rows — collecting every feature into one dict
+        # Single pass through all rows - collecting every feature into one dict
         records = []
         for text in texts:
             row = {}

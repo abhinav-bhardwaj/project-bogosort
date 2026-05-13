@@ -1,5 +1,5 @@
-""" 
-test_svm.py — smoke tests for the LinearSVC pipeline
+﻿""" 
+test_svm.py - smoke tests for the LinearSVC pipeline
 
 Verifies that the shared SVM pipeline can:
 - fit successfully on a minimal dataset,

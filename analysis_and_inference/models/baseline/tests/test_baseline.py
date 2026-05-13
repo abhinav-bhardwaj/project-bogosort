@@ -1,5 +1,5 @@
-"""
-test_baseline.py — smoke tests for the baseline DummyClassifier model
+﻿"""
+test_baseline.py - smoke tests for the baseline DummyClassifier model
 
 This script validates that the project's baseline classifier can successfully train,
 generate binary toxicity predictions, and output valid probability estimates on a minimal

@@ -1,5 +1,5 @@
-"""
-_common.py — shared infrastructure for model training and evaluation
+﻿"""
+_common.py - shared infrastructure for model training and evaluation
 
 This module centralizes all reusable training logic so individual model files
 remain minimal and focused only on model-specific behavior.
@@ -64,11 +64,11 @@ def precompute_features(X_train, X_test):
     StandardScaler on train, saves both arrays + feature names to FEATURES_PATH.
     Any subsequent calls: Just loads results.
 
-    Returns: (X_train_feat, X_test_feat) — numpy arrays.
+    Returns: (X_train_feat, X_test_feat) - numpy arrays.
     Use load_feature_names() to get the feature names list.
     """
     if os.path.exists(FEATURES_PATH):
-        print(f"[skip] {FEATURES_PATH} already exists — loading saved features")
+        print(f"[skip] {FEATURES_PATH} already exists - loading saved features")
         with open(FEATURES_PATH, "rb") as f:
             d = pickle.load(f)
         return d["X_train"], d["X_test"]
@@ -167,14 +167,14 @@ def run_grid_search(name, output_dir, classifier, param_grid,
 
     Parameters
     ----------
-    name : str — short slug used for filenames (e.g., "lasso_log_reg")
-    output_dir : str — where to write tuned pkl, tuning CSV, and evaluation/ subfolder
+    name : str - short slug used for filenames (e.g., "lasso_log_reg")
+    output_dir : str - where to write tuned pkl, tuning CSV, and evaluation/ subfolder
     classifier : sklearn estimator (or pipeline) to be searched
     param_grid : dict for GridSearchCV
-    friendly_name : str — pretty name used in plot titles. Defaults to `name`.
-    scoring : str — sklearn scoring metric for the search. Defaults to average_precision.
-    cv : int — number of CV folds.
-    tune_threshold : bool — if True (and the estimator supports predict_proba), wrap the
+    friendly_name : str - pretty name used in plot titles. Defaults to `name`.
+    scoring : str - sklearn scoring metric for the search. Defaults to average_precision.
+    cv : int - number of CV folds.
+    tune_threshold : bool - if True (and the estimator supports predict_proba), wrap the
         best estimator in a FixedThresholdClassifier with an F1-optimal threshold.
     """
     # Local imports to avoid forcing every consumer of _common.py to pull in
