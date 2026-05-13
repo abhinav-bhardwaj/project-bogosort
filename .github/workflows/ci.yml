@@ -43,6 +43,18 @@ jobs:
           mkdir -p /tmp/deploy
           cp -r app /tmp/deploy/
           cp Dockerfile wsgi.py pyproject.toml uv.lock README.md /tmp/deploy/
+          # Prepend HF Spaces frontmatter so the live Space renders cleanly.
+          # GitHub's README stays clean (no frontmatter clutter at the top).
+          {
+            printf '%s\n' '---' \
+              'title: Wikipedia Toxic Comment Classifier' \
+              'sdk: docker' \
+              'app_port: 7860' \
+              '---' \
+              ''
+            cat /tmp/deploy/README.md
+          } > /tmp/deploy/README.md.new
+          mv /tmp/deploy/README.md.new /tmp/deploy/README.md
           # Copy full analysis_and_inference source (~144 KB of .py files for all models),
           # excluding tests, __pycache__, large data, and existing outputs.
           # The .pkl files come from HF (uploaded once, preserved across deploys).
