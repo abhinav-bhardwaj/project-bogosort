@@ -164,6 +164,11 @@
 
 {% block scripts %}
 <script>
+/** Thrown when the selected model's files are missing on the server. */
+class ModelUnavailableError extends Error {
+  constructor(msg) { super(msg); this.name = "ModelUnavailableError"; }
+}
+
 const FEATURE_LABELS = {
   vader_compound:      { label: "Overall sentiment",          fmt: v => v.toFixed(2) + " (−1 = very negative, +1 = positive)" },
   vader_neg:           { label: "Negative tone",              fmt: v => (v * 100).toFixed(0) + "% of text" },
@@ -308,6 +313,15 @@ async function runInference() {
 
     if (!res.ok) {
       const errBody = await res.json().catch(() => ({}));
+      // 503 with MODEL_UNAVAILABLE gets a specific, actionable message
+      if (res.status === 503 || errBody.error_code === "MODEL_UNAVAILABLE") {
+        const modelLabel = document.getElementById("demoModel").selectedOptions[0]?.text
+          || document.getElementById("demoModel").value;
+        throw new ModelUnavailableError(
+          `"${modelLabel}" is not available on this server. ` +
+          "Try selecting a different model from the dropdown."
+        );
+      }
       throw new Error(errBody.error || `Server error (${res.status})`);
     }
 
@@ -321,7 +335,15 @@ async function runInference() {
     renderResult(data);
     setStatus("");
   } catch (err) {
-    setStatus(err.message, "error");
+    if (err instanceof ModelUnavailableError) {
+      setStatus(err.message, "error");
+      // Visually flag the model selector so the user knows where to act
+      const sel = document.getElementById("demoModel");
+      sel.style.outline = "2px solid #c43b3b";
+      sel.addEventListener("change", () => { sel.style.outline = ""; }, { once: true });
+    } else {
+      setStatus(err.message, "error");
+    }
   } finally {
     btn.disabled = false; btn.textContent = "Analyse";
   }
