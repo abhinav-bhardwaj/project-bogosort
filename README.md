@@ -1,14 +1,12 @@
 ﻿---
 title: Wikipedia Toxic Comment Classifier
-emoji: 🐷
-colorFrom: pink
-colorTo: yellow
+
 sdk: docker
+
 app_port: 7860
-pinned: false
 ---
 
-# project-bogosort - Toxic Comment Classifier
+# Project Bogosort - Toxic Comment Classifier
 
 ## Overview
 
@@ -91,7 +89,7 @@ data/raw/jigsaw-dataset/train.csv.zip
 project-bogosort/
 ├── analysis_and_inference/          # Model training, feature engineering, evaluation
 │   ├── EDA/
-│   │   ├── eda_v1_3.ipynb           # Exploratory data analysis notebook
+│   │   ├── eda_results.ipynb        # Exploratory data analysis notebook
 │   │   ├── eda_processor.py          # EDA cache computation
 │   │   └── eda_cache.json            # Cached EDA results
 │   ├── features/
@@ -141,7 +139,7 @@ project-bogosort/
 │   │   ├── error.html
 │   │   └── [feature-specific templates]
 │   ├── static/
-│   │   ├── css/                     # Stylesheets
+│   │   ├── styles/                  # CSS stylesheets
 │   │   ├── js/                      # Client-side JavaScript
 │   │   └── team_bio/team_bio.json   # Team member profiles
 │   └── tests/
@@ -152,16 +150,18 @@ project-bogosort/
 ├── data/
 │   ├── raw/jigsaw-dataset/          # Raw Kaggle CSVs (untracked, .gitignore)
 │   └── processed/                   # Cached splits, matrices, embeddings
-├── visuals/                         # EDA plots and analysis outputs
 ├── admin/
 │   ├── meeting_minutes/             # Team meeting notes
 │   ├── documentations/              # Git and collaboration guidelines
 │   ├── design_sprint/               # Design sprint artifacts
 │   └── human_centered_design_sprint/
+├── .github/workflows/ci.yml         # CI test + CD deploy to Hugging Face Spaces
+├── Dockerfile                       # Container image for Hugging Face Spaces
 ├── pyproject.toml                   # Project dependencies and metadata
+├── uv.lock                          # Locked dependency versions (uv)
 ├── wsgi.py                          # WSGI entry point for production
 ├── run.py                           # Development server entry point
-├── LICENSE                          # CC BY-NC 4.0 license
+├── license.txt                      # CC BY-NC 4.0 license
 └── README.md                        # This file
 ```
 
