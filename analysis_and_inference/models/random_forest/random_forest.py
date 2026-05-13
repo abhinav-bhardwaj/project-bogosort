@@ -1,5 +1,5 @@
-"""
-random_forest.py — random forest model for toxicity classification
+﻿"""
+random_forest.py - random forest model for toxicity classification
 
 
 This module trains a RandomForestClassifier on the engineered feature space.

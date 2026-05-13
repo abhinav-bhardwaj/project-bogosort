@@ -1,5 +1,5 @@
-"""
-ensemble.py — soft-voting ensemble classifier for toxicity detection
+﻿"""
+ensemble.py - soft-voting ensemble classifier for toxicity detection
 
 The script combines predictions from multiple independently trained classification
 models into a single ensemble using probability-based soft voting.
@@ -99,7 +99,7 @@ def run():
         print(f"[loaded] {name}")
 
     if not members:
-        raise RuntimeError("No member pipelines found — run the individual model files first.")
+        raise RuntimeError("No member pipelines found - run the individual model files first.")
 
     # sklearn's VotingClassifier doesn't natively accept prefit estimators,
     # so bypass .fit() by setting the post-fit attributes directly.

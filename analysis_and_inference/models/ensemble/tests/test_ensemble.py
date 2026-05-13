@@ -1,5 +1,5 @@
-"""
-test_ensemble.py — smoke test for the prefit VotingClassifier ensemble
+﻿"""
+test_ensemble.py - smoke test for the prefit VotingClassifier ensemble
 
 The production ensemble uses a non-standard sklearn workaround where already-
 trained estimators are manually injected into a VotingClassifier without
@@ -29,7 +29,7 @@ def test_voting_classifier_prefit_hack(tiny_data):
     by setting the post-fit attributes directly, without calling .fit() again."""
     X, y = tiny_data
 
-    # Three trivially fitted models — majority vote should be 1
+    # Three trivially fitted models - majority vote should be 1
     m1 = DummyClassifier(strategy="constant", constant=1).fit(X, y)
     m2 = DummyClassifier(strategy="constant", constant=0).fit(X, y)
     m3 = DummyClassifier(strategy="constant", constant=1).fit(X, y)

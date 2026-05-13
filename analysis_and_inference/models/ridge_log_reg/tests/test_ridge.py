@@ -1,5 +1,5 @@
-"""
-test_ridge.py — smoke test for the ridge logistic regression pipeline
+﻿"""
+test_ridge.py - smoke test for the ridge logistic regression pipeline
 
 Checks that the model integrates correctly with the shared pipeline utilities,
 fits successfully, and produces valid predictions and probability outputs.

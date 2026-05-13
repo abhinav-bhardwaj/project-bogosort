@@ -1,5 +1,5 @@
-"""
-dashboard.py — routes for dashboard views
+﻿"""
+dashboard.py - routes for dashboard views
 
 This module keeps dashboard routing intentionally minimal by separating view
 rendering from application logic. The Blueprint acts only as a navigation layer

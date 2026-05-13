@@ -1,5 +1,5 @@
-"""
-feature_selection.py — post-hoc feature-selection analysis for the tuned Random Forest
+﻿"""
+feature_selection.py - post-hoc feature-selection analysis for the tuned Random Forest
 
 This module evaluates how Random Forest performance changes when training on
 only the most important engineered features. Feature importance rankings are
@@ -171,7 +171,7 @@ def run():
     ax.set_xticklabels(df["model"], rotation=15, ha="right")
     ax.set_ylim(0, 1.0)
     ax.set_ylabel("Score")
-    ax.set_title("Random Forest — feature-selection comparison")
+    ax.set_title("Random Forest - feature-selection comparison")
     ax.legend()
     ax.grid(axis="y", alpha=0.3)
     plt.tight_layout()

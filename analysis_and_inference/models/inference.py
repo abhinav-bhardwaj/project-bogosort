@@ -1,5 +1,5 @@
-"""
-inference.py — single-comment inference utility for the Flask app
+﻿"""
+inference.py - single-comment inference utility for the Flask app
 
 This module provides a lightweight inference layer for the Flask application,
 allowing trained toxicity models to classify individual comments in real time. 
@@ -51,7 +51,7 @@ SHAP_BG_SIZE     = 30        # background sample size for KernelExplainer
 SHAP_NSAMPLES    = 100       # samples used to estimate SHAP per row
 DEFAULT_TOP_K    = 10        # how many top features to return
 
-# Module-level cache — populated lazily, reused for every subsequent request
+# Module-level cache - populated lazily, reused for every subsequent request
 _cache: dict = {}
 
 

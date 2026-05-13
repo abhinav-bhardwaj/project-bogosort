@@ -1,5 +1,5 @@
-"""
-svm.py — linear Support Vector Machine for toxicity classification
+﻿"""
+svm.py - linear Support Vector Machine for toxicity classification
 
 This module trains a LinearSVC model on the engineered toxicity features.
 A linear SVM was chosen because it performs well on sparse, high-dimensional

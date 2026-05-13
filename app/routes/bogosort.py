@@ -1,5 +1,5 @@
-"""
-bogosort.py — interactive sorting-demo routes for the Flask app
+﻿"""
+bogosort.py - interactive sorting-demo routes for the Flask app
 
 This module provides a visual demonstration of Bogosort and MergeSort using
 Flask routes backed by asynchronous background workers.
