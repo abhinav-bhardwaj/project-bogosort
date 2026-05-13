@@ -12,7 +12,7 @@ pinned: false
 
 ## Overview
 
-This project is a machine learning web application that automatically detects toxic comments in text. It was developed in Spring 2026 by Team Bogosort for the *Data Structures and Algorithms* course at the Hertie School in Berlin, in partial fulfilment of the Master of Data Science for Public Policy (MDS) programme.
+This project is a comprehensive machine learning web application that automatically detects toxic comments in text and provides tools for content moderation. It was developed in Spring 2026 by Team Bogosort for the *Data Structures and Algorithms* course at the Hertie School in Berlin, in partial fulfilment of the Master of Data Science for Public Policy (MDS) programme.
 
 **Team:** Bianca Rosca-Mayer, Helena Kandjumbwa, David Moth, Alexis Grangier, Aarushi Mahajan, Abhinav Dubey, Klaas Wolff
 
@@ -29,6 +29,46 @@ The tool is primarily aimed at:
 - **Students and educators** learning about applied NLP and machine learning, who can inspect every step of the pipeline from raw text to final prediction.
 
 Unlike commercial moderation APIs, every component here is open, inspectable, and reproducible: the features are hand-engineered and fully documented, the models are standard scikit-learn estimators, and each prediction comes with SHAP-based feature attributions so a human reviewer can see exactly which words, patterns, or linguistic signals pushed the model toward a toxic or non-toxic verdict.
+
+---
+
+## Key Features
+
+### 1. **Interactive Toxicity Classifier**
+Submit a comment and get:
+- Binary toxicity verdict (toxic / non-toxic)
+- Confidence probability (0.0–1.0)
+- Top N features ranked by SHAP value, showing which linguistic signals influenced the decision
+- Real-time inference powered by an ensemble of five trained models
+
+### 2. **Article & Comment Management**
+- Ingest Wikipedia or custom articles via URL
+- Automatically fetch and classify all comments in an article
+- Browse articles with toxicity statistics
+- View detailed comment-level predictions with full explainability
+- Manually override automated decisions
+- Adjust toxicity thresholds on-the-fly and re-evaluate articles
+
+### 3. **Wikipedia Integration**
+- Direct integration with Wikipedia API to fetch articles and talk pages
+- Automatic ingestion of all comments from a Wikipedia article's discussion page
+- URL validation and safe fetching
+
+### 4. **Model Evaluation Dashboard**
+- View performance metrics for all six trained models (confusion matrices, ROC/PR curves, calibration plots)
+- Browse per-model feature importance and error analysis
+- Inspect false positives and false negatives with detailed patterns
+- Download evaluation artifacts
+
+### 5. **Exploratory Data Analysis (EDA) Viewer**
+- Interactive visualization of the Jigsaw dataset characteristics
+- Feature distributions, class imbalance analysis, toxicity patterns
+- Cached EDA to avoid recomputation
+
+### 6. **Bogosort Sorting Algorithm Demo**
+- Visual comparison of Bogosort (randomized) vs. MergeSort (divide-and-conquer)
+- Demonstrates algorithmic complexity differences interactively
+- Session-based state management for concurrent users
 
 ---
 
@@ -49,44 +89,80 @@ data/raw/jigsaw-dataset/train.csv.zip
 
 ```
 project-bogosort/
-├── analysis_and_inference/
+├── analysis_and_inference/          # Model training, feature engineering, evaluation
 │   ├── EDA/
-│   │   └── eda_v1_3.ipynb                  # Exploratory data analysis
+│   │   ├── eda_v1_3.ipynb           # Exploratory data analysis notebook
+│   │   ├── eda_processor.py          # EDA cache computation
+│   │   └── eda_cache.json            # Cached EDA results
 │   ├── features/
-│   │   ├── build_features.py               # DenseFeatureTransformer (~32 features)
+│   │   ├── build_features.py         # DenseFeatureTransformer (~32 features)
 │   │   └── tests/
 │   ├── models/
-│   │   ├── _common.py                      # Shared training, tuning, evaluation utilities
-│   │   ├── run_all.py                      # End-to-end training orchestrator (8 steps)
-│   │   ├── inference.py                    # Single-comment prediction API for Flask
-│   │   ├── split_and_features/
-│   │   │   └── prepare_split.py            # Stratified 80/20 train/test split
-│   │   ├── baseline/baseline.py            # Dummy stratified classifier
-│   │   ├── lasso_log_reg/
-│   │   │   ├── lasso.py                    # Training entry point
-│   │   │   └── core_logistic_regression_lasso.py  # Custom L1 implementation from scratch
-│   │   ├── ridge_log_reg/ridge.py          # sklearn L2 logistic regression
-│   │   ├── random_forest/
-│   │   │   ├── random_forest.py            # RandomForestClassifier
-│   │   │   └── feature_selection.py        # Post-hoc top-5 / top-10 feature ablation
-│   │   ├── svm/svm.py                      # LinearSVC
-│   │   └── ensemble/ensemble.py            # Soft-vote ensemble (final classifier)
+│   │   ├── _common.py                # Shared training, tuning, evaluation utilities
+│   │   ├── run_all.py                # End-to-end training orchestrator (8 steps)
+│   │   ├── inference.py              # Single-comment prediction API for Flask
+│   │   ├── split_and_features/       # Data splitting and feature caching
+│   │   ├── baseline/baseline.py      # Dummy stratified classifier
+│   │   ├── lasso_log_reg/            # L1 logistic regression (custom implementation)
+│   │   ├── ridge_log_reg/            # L2 logistic regression (sklearn)
+│   │   ├── random_forest/            # RandomForest with feature ablation
+│   │   ├── svm/svm.py                # Linear SVM
+│   │   └── ensemble/ensemble.py      # Soft-vote ensemble (final classifier)
 │   └── evaluation_code/
-│       ├── evaluator.py                    # Metrics, confusion matrix, ROC/PR/calibration plots
-│       ├── error_analysis.py               # FP/FN inspection, error patterns, confidence distribution
-│       └── feature_evaluation.py           # SHAP and permutation importance (heavy analysis)
-├── app/
-│   ├── routes/                             # Flask route handlers
-│   ├── templates/                          # HTML templates
-│   └── static/                             # CSS / JS assets
+│       ├── evaluator.py              # Metrics, confusion matrix, plots
+│       ├── error_analysis.py         # FP/FN inspection, error patterns
+│       └── feature_evaluation.py     # SHAP and permutation importance
+├── app/                             # Flask web application
+│   ├── config.py                    # Environment-based configs (dev/test/prod)
+│   ├── __init__.py                  # Flask app factory (create_app)
+│   ├── db/
+│   │   ├── __init__.py              # Database initialization
+│   │   ├── queries.py               # SQL query builders
+│   │   └── article_repository.py    # Article data access layer
+│   ├── routes/
+│   │   ├── main.py                  # Core navigation pages
+│   │   ├── api.py                   # REST API endpoints (moderation, evaluation, articles)
+│   │   ├── dashboard.py             # Model evaluation dashboard
+│   │   ├── bogosort.py              # Sorting algorithm demo
+│   │   └── eda.py                   # EDA visualization routes
+│   ├── services/
+│   │   ├── toxicity_service.py      # Toxicity scoring (inference wrapper)
+│   │   ├── article_service.py       # Article ingestion, comment management
+│   │   ├── evaluation_service.py    # Model evaluation metrics and artifacts
+│   │   ├── eda_service.py           # EDA cache loading and serving
+│   │   ├── wiki_client.py           # Wikipedia API integration
+│   │   ├── wikipedia_talk_fetcher.py# Fetches Wikipedia talk pages
+│   │   ├── sorting_service.py       # Bogosort/MergeSort implementation
+│   │   ├── session_manager.py       # Session state for sorting demo
+│   │   └── compute_eda_cache.py     # Generate EDA cache offline
+│   ├── templates/                   # HTML Jinja2 templates
+│   │   ├── base.html
+│   │   ├── index.html
+│   │   ├── error.html
+│   │   └── [feature-specific templates]
+│   ├── static/
+│   │   ├── css/                     # Stylesheets
+│   │   ├── js/                      # Client-side JavaScript
+│   │   └── team_bio/team_bio.json   # Team member profiles
+│   └── tests/
+│       ├── test_routes/             # Route integration tests
+│       ├── test_services/           # Service unit tests
+│       ├── test_db/                 # Database tests
+│       └── conftest.py              # Pytest fixtures
 ├── data/
-│   ├── raw/jigsaw-dataset/                 # Raw zipped CSVs from Kaggle
-│   └── processed/                          # Cached splits, TF-IDF matrices, BERT embeddings
-├── visuals/                                # EDA plots generated during feature exploration
+│   ├── raw/jigsaw-dataset/          # Raw Kaggle CSVs (untracked, .gitignore)
+│   └── processed/                   # Cached splits, matrices, embeddings
+├── visuals/                         # EDA plots and analysis outputs
 ├── admin/
-│   ├── meeting_minutes/                    # Team meeting notes (Markdown)
-│   └── documentations/                     # Git and collaboration guidelines
-└── pyproject.toml
+│   ├── meeting_minutes/             # Team meeting notes
+│   ├── documentations/              # Git and collaboration guidelines
+│   ├── design_sprint/               # Design sprint artifacts
+│   └── human_centered_design_sprint/
+├── pyproject.toml                   # Project dependencies and metadata
+├── wsgi.py                          # WSGI entry point for production
+├── run.py                           # Development server entry point
+├── LICENSE                          # CC BY-NC 4.0 license
+└── README.md                        # This file
 ```
 
 ---
@@ -106,7 +182,7 @@ All text features are computed by `DenseFeatureTransformer` - a stateless, sklea
 | **Elongation** | `elongated_token_count` (e.g. "cooool"), `consecutive_punct_count` (e.g. "!!!") |
 | **URLs / IPs** | `url_count`, `ip_count`, `has_url_or_ip` |
 | **Syntactic** | `negation_count`, `sentence_count`, `avg_sentence_length` |
-| **Identity mentions** | `identity_mention_count` + binary flags for race, gender, sexuality, religion, disability, nationality |
+| **Identity mentions** | `identity_mention_count`, `identity_race`, `identity_gender`, `identity_sexuality`, `identity_religion`,`identity_disability`,`identity_nationality`|
 
 Features are computed once, scaled with a `StandardScaler`, and cached to disk - all models share the same pre-computed feature matrix so GridSearchCV folds do not redundantly re-run the transformer.
 
@@ -212,19 +288,64 @@ The model, scaler, and SHAP explainer are loaded once at first call and cached f
 
 ---
 
-## Web Application
+## Web Application Architecture
 
-The Flask application (under `app/`) wraps the inference layer into an interactive interface. Users submit a comment and receive:
-- a binary toxicity verdict (toxic / non-toxic),
-- a confidence probability,
-- a ranked list of the features that most influenced the decision, with their values and SHAP contributions.
+The Flask application (`app/`) is structured in layers:
+
+### **Routes** (`app/routes/`)
+- Lightweight controllers that delegate business logic to services
+- No database access or inference logic directly in route handlers
+- Consistent JSON error handling for API routes
+
+### **Services** (`app/services/`)
+- **toxicity_service**: Wraps inference layer, handles model loading and caching
+- **article_service**: Manages article ingestion, comment CRUD, decision tracking
+- **evaluation_service**: Serves model evaluation artifacts and metrics
+- **wiki_client**: Validates and fetches Wikipedia URLs
+- **wikipedia_talk_fetcher**: Downloads and parses Wikipedia talk pages
+- **eda_service**: Loads and serves cached EDA visualizations
+- **sorting_service**: Implements Bogosort and MergeSort algorithms
+- **session_manager**: Manages state for concurrent sorting demo users
+
+### **Database** (`app/db/`)
+- SQLite by default; configurable via `SQL_URI` in config
+- Article repository provides abstraction layer over raw SQL
+- Query builders in `queries.py` centralize SQL logic
+
+### **Configuration** (`app/config.py`)
+- Environment-specific configs (development, testing, production)
+- Database URI, logging, cache paths configurable via environment variables
+
+---
+
+## API Endpoints (REST)
+
+All API endpoints are under `/api/`:
+
+### Toxicity Scoring
+- `POST /api/score` — Score a single comment
+  - Input: `{"text": "comment text"}`
+  - Output: `{"label": 0/1, "probability": 0.X, "features": [...]}`
+
+### Article Management
+- `GET /api/articles` — List all articles (paginated)
+- `POST /api/articles` — Ingest a new article from URL
+- `GET /api/articles/<id>` — Get article details with toxicity summary
+- `GET /api/articles/<id>/comments` — List comments in article (paginated, filterable by toxicity)
+- `PUT /api/articles/<id>/comments/<comment_id>` — Override comment decision
+- `PUT /api/articles/<id>/thresholds` — Re-evaluate article with new thresholds
+
+### Model Evaluation
+- `GET /api/evaluations` — Load all model evaluation results
+- `GET /api/evaluations/<model>` — Get evaluation for a specific model
+- `GET /api/evaluations/<model>/artifacts/<filename>` — Download evaluation artifact (plot, CSV)
 
 ---
 
 ## Requirements
 
 - Python >= 3.10
-- **Core:** `pandas`, `numpy`, `scipy`, `scikit-learn`, `vaderSentiment`, `matplotlib`
+- **Core:** `pandas`, `numpy`, `scipy`, `scikit-learn`, `vaderSentiment`, `matplotlib`, `flask`, `requests`
 - **Dev/testing:** `pytest >= 9.0.2`
 - **Optional - BERT embeddings** (large download, ~2 GB, only needed if `BertTransformer` is used):
   ```bash
@@ -245,19 +366,108 @@ uv sync --group dev
 
 ---
 
-## Running the Tests
+## Running the Application
 
-Each model sub-package has its own test suite:
+### Development Server
+```bash
+python run.py
+```
+Runs on `http://localhost:5000` by default.
+
+### Production Server
+```bash
+gunicorn -w 4 -b 0.0.0.0:8000 wsgi:app
+```
+
+---
+
+## Running Tests
 
 ```bash
+# Run all tests
 uv run pytest
+
+# Run tests for a specific module
+uv run pytest app/tests/test_services/test_toxicity_service.py
+
+# Run with coverage
+uv run pytest --cov=app --cov=analysis_and_inference
 ```
+
+---
+
+## Computing EDA Cache
+
+The EDA viewer requires a precomputed cache file. Generate it with:
+
+```bash
+uv run python app/services/compute_eda_cache.py
+```
+
+This creates `analysis_and_inference/EDA/eda_cache.json`. The app will warn if it's missing, but the feature still works with slower on-demand rendering.
+
+---
+
+## Using the Wikipedia Integration
+
+To fetch and classify comments from a Wikipedia article:
+
+1. Navigate to the article management interface
+2. Paste a Wikipedia URL (e.g., `https://en.wikipedia.org/wiki/Climate_change`)
+3. The app fetches the talk page, extracts all comments, classifies each one
+4. Browse results with toxicity heatmaps and detailed SHAP explanations
 
 ---
 
 ## Repository Conventions
 
-- All branches follow the team's Git collaboration guidelines (`admin/documentations/`).
-- Pull requests require review by the designated reviewer before merging.
-- Tasks are tracked in the team backlog; priority ranges from P0 (most urgent) to P2.
-- Sprint schedule: Sprint 1 (3–10 April), Sprint 2 (14–21 April), Sprint 3 (28 April – 4 May). Project deadline: 9 May 2026.
+- All branches follow the team's Git collaboration guidelines (`admin/documentations/`)
+- Pull requests require review by the designated reviewer before merging
+- Tasks are tracked in the team backlog; priority ranges from P0 (most urgent) to P2
+- Sprint schedule: Sprint 1 (3–10 April), Sprint 2 (14–21 April), Sprint 3 (28 April – 4 May)
+- Project deadline: 9 May 2026
+
+---
+
+## License
+
+This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)**. You are free to share and adapt the work for non-commercial purposes with proper attribution. Commercial use is not permitted without explicit permission.
+
+See `LICENSE` for full details.
+
+---
+
+## Contributing
+
+Contributions are welcome! Please ensure:
+- Code follows the existing style and modular design
+- Tests pass: `uv run pytest`
+- New features include integration tests in `app/tests/`
+- Service logic is isolated from route handlers
+- Database access goes through the repository layer
+
+---
+
+## Troubleshooting
+
+### Models not found
+Ensure `run_all.py` has completed successfully:
+```bash
+uv run python analysis_and_inference/models/run_all.py
+```
+
+### EDA cache missing
+Generate it with:
+```bash
+uv run python app/services/compute_eda_cache.py
+```
+
+### Database connection error
+Check `SQL_URI` in `app/config.py` and ensure the database file/server is accessible.
+
+### Wikipedia fetching fails
+Verify your internet connection and that the Wikipedia URL is valid.
+
+
+### Disclaimer regarding the use of AI in the making of this project
+AI assistants were used throughout the making of this project. In particular, AI agents were useful to generate code, ensure code quality and consistency across all group members. 
