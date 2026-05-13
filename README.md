@@ -396,6 +396,61 @@ uv run pytest --cov=app --cov=analysis_and_inference
 
 ---
 
+## Continuous Integration and Deployment
+
+The project ships with a single GitHub Actions workflow at [.github/workflows/ci.yml](.github/workflows/ci.yml) that handles both CI (running the test suite on every push and pull request) and CD (deploying the live web app to Hugging Face Spaces on every push to `dev`).
+
+**Live app:** https://huggingface.co/spaces/David-Moth/Wikipedia-Toxic-Comment-Classifier
+
+### Continuous Integration — the `test` job
+
+Triggered on every `push` to `dev` and every `pull_request` targeting `dev`. The job runs on `ubuntu-latest` and executes the following steps:
+
+1. **Checkout** the repository.
+2. **Install `uv`** via Astral's official action — the same package manager used locally.
+3. **Set up Python 3.10**, matching the version pinned in `pyproject.toml`.
+4. **Install dependencies** with `uv sync --frozen` so the CI environment matches `uv.lock` exactly. This catches lockfile drift early.
+5. **Run the test suite** with `uv run pytest app/tests/ -v`. Any failing test fails the workflow and blocks merges.
+
+This guards against regressions in routes, services, the inference pipeline, and the database layer.
+
+### Continuous Deployment — the `deploy` job
+
+Runs only on `push` events to `dev` (skipped for pull requests) and only after the `test` job passes (`needs: test`). The deployed Space mirrors the latest green build on `dev`.
+
+The deploy job builds a **slim deploy tree** containing only what the running app needs (~10 MB of code) and force-syncs it to the Hugging Face Space's git repository:
+
+1. **Stage a slim copy** of the project in `/tmp/deploy/`:
+   - The entire [app/](app/) Flask application (routes, services, templates, static assets).
+   - Top-level files needed at build/run time: [Dockerfile](Dockerfile), [wsgi.py](wsgi.py), [pyproject.toml](pyproject.toml), [uv.lock](uv.lock), [README.md](README.md).
+   - The full [analysis_and_inference/](analysis_and_inference/) source tree, **excluding** tests, `__pycache__`, `*.pkl`, `*.npz`, and `*.csv`. This includes every model's training and inference code so unpickling on the Space can find all custom classes (e.g. `LassoLogisticRegression`).
+2. **Recreate empty `outputs/` directories** for each model so the .pkl artifacts uploaded to the Space land in the expected paths.
+3. **Clone the existing HF Space repository** into `/tmp/space/` so previously-uploaded model artifacts and `.gitattributes` are preserved.
+4. **Overlay the slim tree** with `rsync --delete --exclude='*.pkl' --exclude='.gitattributes'`. Stale files in the Space that are no longer in `app/` get deleted, but the large `.pkl` model files uploaded out-of-band are kept intact across deploys.
+5. **Enable Git LFS** locally and register additional binary extensions (`*.png`, `*.jpg`, `*.jpeg`, `*.gif`, `*.db`, `*.npy`, `*.npz`, `*.ipynb`). Hugging Face's xet storage speaks the LFS protocol, so binary files transparently route through their content-addressable backend instead of being rejected as oversized git blobs.
+6. **Commit and push** to the Space's `main` branch. Hugging Face detects the push, rebuilds the Docker image defined by [Dockerfile](Dockerfile), and restarts the container.
+
+### Secrets and one-time setup
+
+The `deploy` job requires two GitHub Actions secrets configured at **Settings → Secrets and variables → Actions**:
+
+- `HF_TOKEN` — a Hugging Face access token with **Write** scope.
+- `HF_NAME` — the HF username that owns the target Space.
+
+The model `.pkl` artifacts (~512 MB total) are too large to ship through git on every deploy, so they were uploaded once via `hf upload` and live permanently on the Space. The deploy workflow never touches them — the `*.pkl` exclude rule in step 4 keeps them safe.
+
+### Lifecycle
+
+A typical deploy cycle:
+
+1. Push a commit to `dev` on GitHub.
+2. GitHub Actions runs the `test` job (~30 s). If anything fails, the deploy is skipped.
+3. The `deploy` job stages, syncs, and pushes the slim tree to Hugging Face.
+4. Hugging Face rebuilds the Docker image (≈ 5–10 min) and restarts the container.
+5. The change is live at the Space URL above.
+
+---
+
 ## Computing EDA Cache
 
 The EDA viewer requires a precomputed cache file. Generate it with:
