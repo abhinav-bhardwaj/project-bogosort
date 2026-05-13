@@ -14,12 +14,19 @@ dependencies = [
     "vaderSentiment",
     # Visualisation
     "matplotlib",
+    # for flask application
+    "flask",
+    "imageio",
+    "shap"
 ]
 
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
 
 # BERT embeddings are optional — large download (~2GB), only needed if
 # BertTransformer is used. Install manually if needed:

@@ -1,0 +1,78 @@
+.card {
+  background: var(--wp-card-bg);
+  border: 1px solid var(--wp-border);
+  border-radius: 4px;
+  padding: 14px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-light);
+}
+
+.form-card {
+  margin-bottom: 20px;
+}
+
+.card h2 {
+  margin-top: 0;
+}
+
+.metric-box {
+  background: var(--wp-card-bg);
+  border: 1px solid var(--wp-border);
+  border-radius: 4px;
+  padding: 10px 8px;
+  text-align: center;
+  box-shadow: var(--shadow-light);
+}
+
+.metric-box h3 {
+  margin: 0;
+  font-size: 9px;
+  color: var(--wp-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+
+.metric-box p {
+  margin: 5px 0 0;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--wp-link);
+}
+
+.metric-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+  gap: 8px;
+  margin: 16px 0;
+}
+
+@media (max-width: 768px) {
+  .metric-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 12px;
+  }
+
+  .metric-list {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .metric-box {
+    padding: 8px 6px;
+  }
+
+  .metric-box h3 {
+    font-size: 8px;
+  }
+
+  .metric-box p {
+    font-size: 14px;
+  }
+}

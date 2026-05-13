@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - dev
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv python install 3.10
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run tests
+        run: uv run pytest app/tests/ -v
+
+  deploy:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build slim deploy tree
+        run: |
+          mkdir -p /tmp/deploy
+          cp -r app /tmp/deploy/
+          cp Dockerfile wsgi.py pyproject.toml uv.lock README.md /tmp/deploy/
+          # Prepend HF Spaces frontmatter so the live Space renders cleanly.
+          # GitHub's README stays clean (no frontmatter clutter at the top).
+          {
+            printf '%s\n' '---' \
+              'title: Wikipedia Toxic Comment Classifier' \
+              'sdk: docker' \
+              'app_port: 7860' \
+              '---' \
+              ''
+            cat /tmp/deploy/README.md
+          } > /tmp/deploy/README.md.new
+          mv /tmp/deploy/README.md.new /tmp/deploy/README.md
+          # Copy full analysis_and_inference source (~144 KB of .py files for all models),
+          # excluding tests, __pycache__, large data, and existing outputs.
+          # The .pkl files come from HF (uploaded once, preserved across deploys).
+          rsync -av \
+            --exclude='__pycache__' \
+            --exclude='.pytest_cache' \
+            --exclude='tests/' \
+            --exclude='conftest.py' \
+            --exclude='*.pkl' \
+            --exclude='*.npz' \
+            --exclude='*.csv' \
+            analysis_and_inference/ /tmp/deploy/analysis_and_inference/
+          # Re-create empty outputs/ dirs so HF-uploaded .pkl paths exist
+          mkdir -p /tmp/deploy/analysis_and_inference/models/baseline/outputs
+          mkdir -p /tmp/deploy/analysis_and_inference/models/lasso_log_reg/outputs
+          mkdir -p /tmp/deploy/analysis_and_inference/models/ridge_log_reg/outputs
+          mkdir -p /tmp/deploy/analysis_and_inference/models/random_forest/outputs
+          mkdir -p /tmp/deploy/analysis_and_inference/models/svm/outputs
+          mkdir -p /tmp/deploy/analysis_and_inference/models/ensemble/outputs
+          find /tmp/deploy -type d -name __pycache__ -prune -exec rm -rf {} +
+          find /tmp/deploy -type d -name .pytest_cache -prune -exec rm -rf {} +
+          du -sh /tmp/deploy
+
+      - name: Sync slim tree into HF Space (preserves uploaded .pkl files)
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_NAME: ${{ secrets.HF_NAME }}
+        run: |
+          SPACE_URL="https://${HF_NAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_NAME}/Wikipedia-Toxic-Comment-Classifier"
+          git clone "$SPACE_URL" /tmp/space
+          cd /tmp/space
+          git config user.email "deploy@github-actions"
+          git config user.name "github-actions"
+          # Overlay slim tree on top of HF Space, deleting stale files but preserving *.pkl
+          rsync -av --delete \
+            --exclude='.git' \
+            --exclude='.gitattributes' \
+            --exclude='*.pkl' \
+            /tmp/deploy/ /tmp/space/
+          # Tell git-lfs (which HF accepts via xet) to handle binary file types.
+          # HF rejects any binary file pushed as a regular git blob.
+          git lfs install --local
+          git lfs track "*.png" "*.jpg" "*.jpeg" "*.gif" "*.db" "*.npy" "*.npz" "*.ipynb"
+          git add .gitattributes
+          git add -A
+          git add --renormalize . || true
+          if git diff --cached --quiet; then
+            echo "No changes to deploy."
+          else
+            git commit -m "Deploy from GitHub commit ${GITHUB_SHA}"
+            git push origin HEAD:main
+          fi

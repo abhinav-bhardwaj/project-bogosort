@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}ThermoTox — Home{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/styles/landing.css">
+{% endblock %}
+
+{% block main %}
+<main>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">Hertie School · DSA 2026</div>
+      <h1 class="hero-title">Detecting Toxicity in<br>Wikipedia Discussions</h1>
+      <p class="hero-sub">
+        An interactive machine learning application that analyses Wikipedia talk page comments,
+        scores them for toxic content, and helps moderators decide what to review or remove.
+      </p>
+      <div class="hero-actions">
+        <a href="/analyze/" class="btn primary hero-btn">Analyse an Article</a>
+        <a href="/about/" class="btn secondary hero-btn">About the Project</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features-section">
+    <div class="features-inner">
+      <h2 class="section-heading">What the App Does</h2>
+      <div class="features-grid">
+
+        <div class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <h3>Fetch &amp; Score Comments</h3>
+          <p>
+            Paste any Wikipedia URL and the app fetches talk page comments via the
+            MediaWiki API, then scores each one for toxicity using your chosen ML model.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h3>Multiple ML Models</h3>
+          <p>
+            Compare predictions from Lasso Logistic Regression, SVM, Gradient Boosting,
+            and more — all trained on the Jigsaw toxicity dataset.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">⚠️</div>
+          <h3>Configurable Thresholds</h3>
+          <p>
+            Set an auto-ban threshold and a manual-review threshold. Comments above the
+            first are flagged automatically; those in between are queued for human review.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>Exploratory Analysis</h3>
+          <p>
+            Dive into the dataset statistics, word distributions, toxicity trends over
+            time, and model performance metrics on the EDA and Dashboard pages.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🔀</div>
+          <h3>Sort Demo</h3>
+          <p>
+            A subtle nod to our team name. Watch bogosort and merge sort race each other in an animated visualisation,
+            illustrating why algorithm choice matters.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📈</div>
+          <h3>Model Evaluation</h3>
+          <p>
+            Inspect per-model metrics (accuracy, precision, recall, F1, AUC) and
+            confusion matrices on the Nerdy Dashboard to understand model trade-offs.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="how-section">
+    <div class="how-inner">
+      <h2 class="section-heading">How It Works</h2>
+      <ol class="how-steps">
+        <li>
+          <span class="step-num">1</span>
+          <div class="step-body">
+            <strong>Enter a Wikipedia URL</strong>
+            <p>The app fetches talk-page comments for that article from the MediaWiki API.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">2</span>
+          <div class="step-body">
+            <strong>Choose a Model &amp; Thresholds</strong>
+            <p>Select which trained classifier to use and tune the auto-ban / review score cutoffs.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">3</span>
+          <div class="step-body">
+            <strong>Analyse Comments</strong>
+            <p>Each comment is vectorised and scored. Results appear instantly in an interactive grid.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">4</span>
+          <div class="step-body">
+            <strong>Review &amp; Act</strong>
+            <p>Drill into individual comments to see token-level toxicity highlights and take moderation actions.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- CTA footer strip -->
+  <section class="cta-strip">
+    <div class="cta-inner">
+      <p class="cta-text">Ready to try it?</p>
+      <a href="/analyze/" class="btn primary hero-btn">Open the Analyser →</a>
+    </div>
+  </section>
+
+</main>
+{% endblock %}

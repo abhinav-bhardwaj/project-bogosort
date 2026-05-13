@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}About — ThermoTox{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/styles/landing.css">
+{% endblock %}
+
+{% block main %}
+<main class="page-container">
+  <div class="about-page">
+
+    <!-- Header -->
+    <section class="about-hero card">
+      <h1 class="about-title">About the Project</h1>
+      <p class="about-lead">
+        <em>ThermoTox</em> is an interactive web application for detecting toxic content in
+        Wikipedia talk page discussions. It was built in Spring 2026 by students at the
+        <a href="https://www.hertie-school.org" target="_blank" rel="noopener">Hertie School</a> in Berlin
+        as part of the <em>Data Structures &amp; Algorithms</em> course in the
+        Master of Data Science for Public Policy programme.
+      </p>
+    </section>
+
+    <!-- Project context -->
+    <section class="card">
+      <h2>Background</h2>
+      <p>
+        Wikipedia is one of the largest collaborative knowledge-bases in the world. Behind every
+        article is a talk page where editors discuss changes, flag disputes, and coordinate content
+        decisions. These discussions can be constructive — but they can also turn toxic, discouraging
+        participation and harming the volunteer community that keeps Wikipedia running.
+      </p>
+      <p>
+        This project explores whether machine learning can help surface toxic comments automatically,
+        giving moderators a tool that scales with the enormous volume of talk page activity.
+      </p>
+    </section>
+
+    <!-- Dataset -->
+    <section class="card">
+      <h2>Dataset</h2>
+      <p>
+        Our models are trained on the
+        <a href="https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge" target="_blank" rel="noopener">
+          Jigsaw Toxic Comment Classification Challenge
+        </a>
+        dataset, published by Google's Jigsaw unit. It contains roughly 160,000 Wikipedia
+        talk page comments labelled for toxicity, severe toxicity, obscenity, threats, insults,
+        and identity-based attacks.
+      </p>
+      <p>
+        For this application we treat the task as binary classification
+        (toxic vs. non-toxic), using the <code>toxic</code> label as the positive class.
+      </p>
+    </section>
+
+    <!-- Models -->
+    <section class="card">
+      <h2>Models</h2>
+      <p>
+        We trained and evaluated several classical machine learning classifiers using
+        TF-IDF text vectorisation. All models are compared on accuracy, precision, recall,
+        F1-score, and AUC on a held-out test set. You can inspect per-model metrics on the
+        <a href="/dashboard/nerdy/">Nerdy Dashboard</a>.
+      </p>
+      <div class="model-table-wrap">
+        <table class="about-table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Lasso Logistic Regression</td>
+              <td>L1-regularised; sparse, interpretable weights</td>
+            </tr>
+            <tr>
+              <td>Ridge Logistic Regression</td>
+              <td>L2-regularised; strong baseline</td>
+            </tr>
+            <tr>
+              <td>Linear SVM</td>
+              <td>High-dimensional text classification workhorse</td>
+            </tr>
+            <tr>
+              <td>Random Forest</td>
+              <td>Random ensemble of decision trees</td>
+            </tr>
+            <tr>
+              <td>Ensemble</td>
+              <td>Ensemble of Lasso, Ridge, and Random Forest</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Technical stack -->
+    <section class="card">
+      <h2>Technical Stack</h2>
+      <ul class="tech-list">
+        <li><strong>Backend:</strong> Python · Flask · SQLite (via SQLAlchemy)</li>
+        <li><strong>ML:</strong> scikit-learn · NumPy · pandas</li>
+        <li><strong>Data fetching:</strong> Manual Talk Fetch Implementation with MediaWiki REST API</li>
+        <li><strong>Frontend:</strong> Vanilla HTML/CSS/JS (Wikipedia-inspired design)</li>
+        <li><strong>Testing:</strong> pytest · coverage</li>
+      </ul>
+    </section>
+
+    <!-- Team -->
+    <section class="card">
+      <h2>Team</h2>
+      <p class="team-intro">
+        Built by seven students from the MDS Public Policy cohort at the Hertie School —
+        team Bogosort, now building <strong>ThermoTox</strong>.
+      </p>
+      <div class="team-grid">
+        {% for member in team %}
+        <div class="team-card">
+          {% if member.image %}
+          <img src="/static/{{ member.image }}" alt="{{ member.name }}" class="team-photo"
+               style="object-position: {{ member.photo_position or 'center 20%' }};">
+          {% else %}
+          <div class="team-avatar">{{ member.name.split()[0][0] }}{{ member.name.split()[-1][0] }}</div>
+          {% endif %}
+          <div class="team-card-body">
+            <div class="team-name">{{ member.name }}</div>
+            {% if member.bio %}
+            <p class="team-bio">{{ member.bio }}</p>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Course context -->
+    <section class="card">
+      <h2>Course Context</h2>
+      <p>
+        <strong>Course:</strong> Data Structures &amp; Algorithms · Spring 2026<br>
+        <strong>Instructors:</strong> <a href="https://ddimmery.com/" target="_blank" rel="noopener">Dr. Drew Dimmery</a> <br>
+        <strong>Programme:</strong> Master of Data Science for Public Policy<br>
+        <strong>Institution:</strong> <a href="https://www.hertie-school.org" target="_blank" rel="noopener">Hertie School</a>, Berlin, Germany
+      </p>
+      <p>
+        The project demonstrates practical applications of algorithmic thinking: from
+        efficient text indexing (TF-IDF sparse matrices) and sorting visualisations
+        (bogosort vs. merge sort) to database query optimisation and REST API design.
+      </p>
+    </section>
+
+    <!-- Source code -->
+    <section class="card">
+      <h2>Source Code &amp; Acknowledgements</h2>
+      <p>
+        The full source code is available on GitHub. Toxicity labels come from the Jigsaw/Conversation AI
+        dataset. The application design draws inspiration from Wikipedia's own interface.
+      </p>
+      <p>
+        This is an academic project. Predictions are probabilistic estimates and should not be used
+        as the sole basis for moderation decisions.
+      </p>
+    </section>
+
+  </div>
+</main>
+{% endblock %}

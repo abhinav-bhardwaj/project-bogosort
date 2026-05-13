@@ -1,0 +1,260 @@
+{
+  "models": [
+    {
+      "model_id": "lasso_log_reg",
+      "model_name": "Lasso Logistic Regression",
+      "version": "1.0.0",
+      "dataset": "jigsaw-toxicity",
+      "updated_at": "2026-05-13",
+      "metrics": {
+        "accuracy": 0.9207,
+        "precision": 0.5911,
+        "recall": 0.561,
+        "f1": 0.5756,
+        "roc_auc": 0.8875,
+        "pr_auc": 0.6182
+      },
+      "confusion_matrix": [
+        [
+          27669,
+          1187
+        ],
+        [
+          1343,
+          1716
+        ]
+      ],
+      "roc_curve": {
+        "fpr": [],
+        "tpr": [],
+        "image_url": ""
+      },
+      "pr_curve": {
+        "recall": [],
+        "precision": [],
+        "image_url": ""
+      },
+      "hyperparams": {
+        "alpha": 0.001,
+        "learning_rate": 0.1,
+        "val_pr_auc_mean": 0.6206,
+        "val_pr_auc_std": 0.001251
+      },
+      "perturbation": [
+        {
+          "feature": "profanity_count",
+          "importance": 1.0358
+        },
+        {
+          "feature": "vader_neg",
+          "importance": 0.7246
+        },
+        {
+          "feature": "vader_compound",
+          "importance": 0.507
+        }
+      ]
+    },
+    {
+      "model_id": "random_forest",
+      "model_name": "Random Forest",
+      "version": "1.0.0",
+      "dataset": "jigsaw-toxicity",
+      "updated_at": "2026-05-13",
+      "metrics": {
+        "accuracy": 0.9412,
+        "precision": 0.7102,
+        "recall": 0.6522,
+        "f1": 0.68,
+        "roc_auc": 0.9292,
+        "pr_auc": 0.7601
+      },
+      "confusion_matrix": [
+        [
+          28042,
+          814
+        ],
+        [
+          1064,
+          1995
+        ]
+      ],
+      "roc_curve": {
+        "fpr": [],
+        "tpr": [],
+        "image_url": ""
+      },
+      "pr_curve": {
+        "recall": [],
+        "precision": [],
+        "image_url": ""
+      },
+      "hyperparams": {
+        "max_depth": null,
+        "min_samples_split": 5,
+        "n_estimators": 200,
+        "val_pr_auc_mean": 0.7486,
+        "val_pr_auc_std": 0.005417
+      },
+      "perturbation": [
+        {
+          "feature": "profanity_count",
+          "importance": 0.1693
+        },
+        {
+          "feature": "vader_neg",
+          "importance": 0.1339
+        },
+        {
+          "feature": "vader_pos_minus_neg",
+          "importance": 0.0937
+        }
+      ]
+    },
+    {
+      "model_id": "ridge_log_reg",
+      "model_name": "Ridge Logistic Regression",
+      "version": "1.0.0",
+      "dataset": "jigsaw-toxicity",
+      "updated_at": "2026-05-13",
+      "metrics": {
+        "accuracy": 0.9425,
+        "precision": 0.7273,
+        "recall": 0.6401,
+        "f1": 0.6809,
+        "roc_auc": 0.9233,
+        "pr_auc": 0.7422
+      },
+      "confusion_matrix": [
+        [
+          28122,
+          734
+        ],
+        [
+          1101,
+          1958
+        ]
+      ],
+      "roc_curve": {
+        "fpr": [],
+        "tpr": [],
+        "image_url": ""
+      },
+      "pr_curve": {
+        "recall": [],
+        "precision": [],
+        "image_url": ""
+      },
+      "hyperparams": {
+        "C": 10,
+        "val_pr_auc_mean": 0.7354,
+        "val_pr_auc_std": 0.001283
+      },
+      "perturbation": [
+        {
+          "feature": "profanity_count",
+          "importance": 19.6637
+        },
+        {
+          "feature": "word_count",
+          "importance": 0.8915
+        },
+        {
+          "feature": "vader_neg",
+          "importance": 0.6556
+        }
+      ]
+    },
+    {
+      "model_id": "svm",
+      "model_name": "Support Vector Machine",
+      "version": "1.0.0",
+      "dataset": "jigsaw-toxicity",
+      "updated_at": "2026-05-13",
+      "metrics": {
+        "accuracy": 0.8936,
+        "precision": 0.4681,
+        "recall": 0.8058,
+        "f1": 0.5922,
+        "roc_auc": 0.9214,
+        "pr_auc": 0.7369
+      },
+      "confusion_matrix": [
+        [
+          26055,
+          2801
+        ],
+        [
+          594,
+          2465
+        ]
+      ],
+      "roc_curve": {
+        "fpr": [],
+        "tpr": [],
+        "image_url": ""
+      },
+      "pr_curve": {
+        "recall": [],
+        "precision": [],
+        "image_url": ""
+      },
+      "hyperparams": {
+        "C": 10,
+        "val_pr_auc_mean": 0.7309,
+        "val_pr_auc_std": 0.001944
+      },
+      "perturbation": [
+        {
+          "feature": "profanity_count",
+          "importance": 5.7686
+        },
+        {
+          "feature": "vader_neg",
+          "importance": 0.2402
+        },
+        {
+          "feature": "word_count",
+          "importance": 0.2016
+        }
+      ]
+    },
+    {
+      "model_id": "ensemble",
+      "model_name": "Ensemble (Lasso + RF + Ridge)",
+      "version": "1.0.0",
+      "dataset": "jigsaw-toxicity",
+      "updated_at": "2026-05-13",
+      "metrics": {
+        "accuracy": 0.9444,
+        "precision": 0.7359,
+        "recall": 0.6558,
+        "f1": 0.6935,
+        "roc_auc": 0.9303,
+        "pr_auc": 0.7514
+      },
+      "confusion_matrix": [
+        [
+          28136,
+          720
+        ],
+        [
+          1053,
+          2006
+        ]
+      ],
+      "roc_curve": {
+        "fpr": [],
+        "tpr": [],
+        "image_url": ""
+      },
+      "pr_curve": {
+        "recall": [],
+        "precision": [],
+        "image_url": ""
+      },
+      "hyperparams": {},
+      "perturbation": []
+    }
+  ]
+}

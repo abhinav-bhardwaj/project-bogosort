@@ -1,0 +1,477 @@
+{% extends "base.html" %}
+
+{% block title %}Live Demo — ThermoTox{% endblock %}
+
+{% block head %}
+  <style>
+    .demo-page { max-width: 820px; margin: 2rem auto; padding: 0 1rem; }
+
+    .demo-card { background: var(--surface, #fff); border: 1px solid var(--border, #e0e0e0); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .demo-card h1 { margin-top: 0; font-size: 1.5rem; }
+    .demo-card p.muted { color: var(--text-muted, #666); margin-top: 0; }
+
+    .demo-textarea { width: 100%; min-height: 120px; resize: vertical; font-size: 0.95rem; padding: 0.6rem 0.8rem; border: 1px solid var(--border, #ccc); border-radius: 4px; box-sizing: border-box; font-family: inherit; }
+    .demo-textarea:focus { outline: none; border-color: var(--primary, #3b6fc4); box-shadow: 0 0 0 2px rgba(59,111,196,.15); }
+
+    .demo-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+    @media (max-width: 540px) { .demo-controls { grid-template-columns: 1fr; } }
+
+    .demo-field label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .demo-field select, .demo-field input[type=range] { width: 100%; }
+    .demo-field .field-hint { font-size: 0.78rem; color: var(--text-muted, #666); }
+
+    .demo-actions { margin-top: 1rem; display: flex; gap: 0.75rem; align-items: center; }
+    #demoStatus { font-size: 0.88rem; color: var(--text-muted, #666); }
+
+    /* Result panel */
+    #demoResult { display: none; }
+
+    .result-score-row { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .result-score-big { font-size: 2.5rem; font-weight: 700; line-height: 1; }
+    .result-score-big.toxic    { color: #c43b3b; }
+    .result-score-big.review   { color: #c48a3b; }
+    .result-score-big.safe     { color: #2e7d32; }
+
+    .result-badges { display: flex; flex-direction: column; gap: 0.35rem; }
+    .result-meta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.5rem; margin-bottom: 1rem; }
+    .result-meta-item { background: var(--surface-alt, #f8f8f8); border-radius: 4px; padding: 0.45rem 0.7rem; font-size: 0.85rem; }
+    .result-meta-item strong { display: block; font-size: 0.78rem; color: var(--text-muted, #666); }
+
+    .result-comment-box { background: var(--surface-alt, #f8f8f8); border-left: 3px solid var(--primary, #3b6fc4); padding: 0.75rem 1rem; border-radius: 0 4px 4px 0; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1rem; white-space: pre-wrap; word-break: break-word; }
+
+    /* SHAP rows (same as comment.html styles, inlined for isolation) */
+    .shap-intro { font-size: 0.88rem; color: var(--text-muted, #666); margin-bottom: 0.75rem; }
+    .shap-row { display: grid; grid-template-columns: 1fr 1.5fr 160px; align-items: center; gap: 0.6rem; padding: 0.4rem 0; border-bottom: 1px solid var(--border-light, #f0f0f0); }
+    .shap-row:last-child { border-bottom: none; }
+    .shap-label { font-size: 0.85rem; font-weight: 600; }
+    .shap-feature-name { display: block; font-size: 0.72rem; color: var(--text-muted, #888); font-weight: 400; font-family: monospace; }
+    .shap-bar-track { background: var(--surface-alt, #f0f0f0); border-radius: 3px; height: 8px; overflow: hidden; }
+    .shap-bar { height: 100%; border-radius: 3px; min-width: 2px; }
+    .shap-bar-pos { background: #c43b3b; }
+    .shap-bar-neg { background: #3b6fc4; }
+    .shap-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 0.15rem; width: 160px; }
+    .shap-direction { font-size: 0.75rem; white-space: nowrap; }
+    .shap-dir-pos { color: #c43b3b; }
+    .shap-dir-neg { color: #3b6fc4; }
+    .shap-value { font-size: 0.78rem; color: var(--text-muted, #666); text-align: right; word-break: break-word; }
+    .shap-empty { color: var(--text-muted, #888); font-size: 0.88rem; }
+
+    .threshold-zone-wrap { margin: 0.5rem 0; }
+    .threshold-zone-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; }
+    .tz-safe   { background: #2e7d32; }
+    .tz-review { background: #c48a3b; }
+    .tz-ban    { background: #c43b3b; }
+    .tz-labels { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted, #888); margin-top: 0.2rem; }
+
+    .badge { display: inline-block; padding: 0.2rem 0.55rem; border-radius: 4px; font-size: 0.82rem; font-weight: 600; }
+    .badge.danger      { background: #fde8e8; color: #c43b3b; }
+    .badge.warning     { background: #fdf3e8; color: #c48a3b; }
+    .badge.success     { background: #e8f5e9; color: #2e7d32; }
+    .badge.neutral     { background: #f0f0f0; color: #555; }
+
+    .svm-note { display: flex; gap: 0.4rem; align-items: flex-start; font-size: 0.82rem; background: #fdf8e8; border: 1px solid #e8d88a; border-radius: 4px; padding: 0.5rem 0.75rem; margin-top: 0.5rem; }
+  </style>
+{% endblock %}
+
+{% block main %}
+<main class="demo-page">
+
+  <!-- Input card -->
+  <div class="demo-card">
+    <h1>Live Inference Demo</h1>
+    <p class="muted">Paste any comment text below and run the toxicity classifier directly without Wikipedia URL required.</p>
+
+    <form id="demoForm">
+      <div class="demo-field">
+        <label for="demoText">Comment text</label>
+        <textarea id="demoText" class="demo-textarea" placeholder="Type or paste a comment here…" maxlength="10000"></textarea>
+      </div>
+
+      <div class="demo-controls">
+        <!-- Model selector -->
+        <div class="demo-field">
+          <label for="demoModel">Classification model</label>
+          <select id="demoModel"></select>
+          <div id="demoModelInfo" class="field-hint" style="margin-top:.3rem;" hidden></div>
+        </div>
+
+        <!-- Threshold sliders -->
+        <div class="demo-field">
+          <label>Toxicity thresholds</label>
+          <div class="threshold-zone-wrap">
+            <div class="threshold-zone-bar">
+              <div class="tz-safe"   id="dtzSafe"   style="width:55%"></div>
+              <div class="tz-review" id="dtzReview"  style="width:20%"></div>
+              <div class="tz-ban"    id="dtzBan"     style="width:25%"></div>
+            </div>
+            <div class="tz-labels">
+              <span>0 safe</span>
+              <span id="dtzReviewLabel">0.55 review</span>
+              <span id="dtzBanLabel">0.75 ban</span>
+              <span>1</span>
+            </div>
+          </div>
+          <div style="margin-top:.4rem;">
+            <label style="font-size:.8rem;">Review if ≥ <strong id="dManualVal">0.55</strong>
+              <input id="dManualThreshold" type="range" min="0" max="1" step="0.01" value="0.55">
+            </label>
+            <label style="font-size:.8rem;margin-top:.3rem;">Auto-ban if ≥ <strong id="dAutoVal">0.75</strong>
+              <input id="dAutoThreshold" type="range" min="0" max="1" step="0.01" value="0.75">
+            </label>
+          </div>
+          <div id="demoSvmNote" class="svm-note" hidden>
+            <span>ⓘ</span>
+            <span>SVM outputs a hard 0/1 label — threshold sliders have no effect.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-actions">
+        <button type="submit" class="btn primary" id="demoBtn">Analyse</button>
+        <span id="demoStatus"></span>
+      </div>
+    </form>
+  </div>
+
+  <!-- Result card -->
+  <div class="demo-card" id="demoResult">
+    <h2 style="margin-top:0;">Result</h2>
+
+    <div class="result-comment-box" id="resCommentText"></div>
+
+    <div class="result-score-row">
+      <div class="result-score-big" id="resScoreBig"></div>
+      <div class="result-badges">
+        <span id="resDecisionBadge" class="badge"></span>
+        <span id="resRuleText" style="font-size:.82rem;color:var(--text-muted,#666);"></span>
+      </div>
+    </div>
+
+    <div class="result-meta-grid">
+      <div class="result-meta-item"><strong>Model</strong><span id="resModel"></span></div>
+      <div class="result-meta-item"><strong>Inference time</strong><span id="resInferenceMs"></span></div>
+      <div class="result-meta-item"><strong>Auto-ban threshold</strong><span id="resAutoThr"></span></div>
+      <div class="result-meta-item"><strong>Review threshold</strong><span id="resManualThr"></span></div>
+    </div>
+
+    <h3 style="margin-bottom:.5rem;">What drove this prediction</h3>
+    <p class="shap-intro">Each factor below pushed the model's score up (toward toxic) or down (toward safe). Longer bars mean a stronger influence.</p>
+    <div id="resFeatureList"></div>
+  </div>
+
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/** Thrown when the selected model's files are missing on the server. */
+class ModelUnavailableError extends Error {
+  constructor(msg) { super(msg); this.name = "ModelUnavailableError"; }
+}
+
+const FEATURE_LABELS = {
+  vader_compound:      { label: "Overall sentiment",          fmt: v => v.toFixed(2) + " (−1 = very negative, +1 = positive)" },
+  vader_neg:           { label: "Negative tone",              fmt: v => (v * 100).toFixed(0) + "% of text" },
+  vader_pos:           { label: "Positive tone",              fmt: v => (v * 100).toFixed(0) + "% of text" },
+  vader_is_negative:   { label: "Negative tone detected",     fmt: v => v === 1 ? "Yes" : "No" },
+  vader_intensity:     { label: "Emotional intensity",        fmt: v => v.toFixed(2) + " (0 = neutral, 1 = peak)" },
+  vader_pos_minus_neg: { label: "Net sentiment",              fmt: v => (v >= 0 ? "+" : "") + v.toFixed(2) },
+  has_second_person:     { label: "Directly addresses someone",  fmt: v => v === 1 ? "Yes" : "No" },
+  second_person_count:   { label: 'Words like "you" / "your"',   fmt: v => v + " word" + (v !== 1 ? "s" : "") },
+  second_person_density: { label: "Direct-address density",      fmt: v => (v * 100).toFixed(1) + "% of words" },
+  profanity_count:            { label: "Profanity words",      fmt: v => v + " word" + (v !== 1 ? "s" : "") },
+  obfuscated_profanity_count: { label: "Disguised profanity",  fmt: v => v + " word" + (v !== 1 ? "s" : "") },
+  slang_count: { label: "Toxic slang terms", fmt: v => v + " term" + (v !== 1 ? "s" : "") },
+  char_count:        { label: "Comment length",       fmt: v => v + " characters" },
+  word_count:        { label: "Word count",            fmt: v => v + " word" + (v !== 1 ? "s" : "") },
+  exclamation_count: { label: "Exclamation marks",    fmt: v => v },
+  uppercase_ratio:   { label: "ALL CAPS proportion",  fmt: v => (v * 100).toFixed(0) + "% of words" },
+  unique_word_ratio: { label: "Vocabulary variety",   fmt: v => (v * 100).toFixed(0) + "% unique words" },
+  elongated_token_count:   { label: "Exaggerated words",      fmt: v => v + " word" + (v !== 1 ? "s" : "") + ' (e.g. "soooo")' },
+  consecutive_punct_count: { label: "Repeated punctuation",   fmt: v => v + ' run' + (v !== 1 ? "s" : "") + ' (e.g. "!!!")' },
+  url_count:     { label: "Links included",          fmt: v => v },
+  ip_count:      { label: "IP addresses mentioned",  fmt: v => v },
+  has_url_or_ip: { label: "Contains link or IP",     fmt: v => v === 1 ? "Yes" : "No" },
+  negation_count:      { label: 'Negation words (e.g. "not", "never")', fmt: v => v + " word" + (v !== 1 ? "s" : "") },
+  sentence_count:      { label: "Number of sentences",                   fmt: v => v },
+  avg_sentence_length: { label: "Average sentence length",               fmt: v => v.toFixed(1) + " words" },
+  identity_mention_count: { label: "Identity group mentions",      fmt: v => v + " mention" + (v !== 1 ? "s" : "") },
+  identity_race:          { label: "Mentions race or ethnicity",   fmt: v => v === 1 ? "Yes" : "No" },
+  identity_gender:        { label: "Mentions gender",              fmt: v => v === 1 ? "Yes" : "No" },
+  identity_sexuality:     { label: "Mentions sexual orientation",  fmt: v => v === 1 ? "Yes" : "No" },
+  identity_religion:      { label: "Mentions religion",            fmt: v => v === 1 ? "Yes" : "No" },
+  identity_disability:    { label: "Mentions disability",          fmt: v => v === 1 ? "Yes" : "No" },
+  identity_nationality:   { label: "Mentions nationality / origin", fmt: v => v === 1 ? "Yes" : "No" },
+};
+
+const MODEL_META = {
+  lasso_log_reg: { tag: "Custom-built", usesThresholds: true, description: "L1-regularised logistic regression. Returns a probability score between 0 and 1." },
+  ridge_log_reg: { usesThresholds: true, description: "L2-regularised logistic regression. Produces calibrated probability scores." },
+  random_forest: { usesThresholds: true, description: "Ensemble of decision trees. Returns class probabilities via vote averaging." },
+  svm:           { usesThresholds: false, description: "Linear SVM that outputs a hard 0/1 class label, not a probability score." },
+  ensemble:      { usesThresholds: true, description: "Weighted vote of Lasso, Random Forest, and Ridge models." },
+};
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadModels();
+  bindThresholdSliders();
+
+  document.getElementById("demoForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    await runInference();
+  });
+});
+
+async function loadModels() {
+  const select = document.getElementById("demoModel");
+  try {
+    const res = await fetch("/api/models");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const models = data.models || [];
+    if (!models.length) throw new Error("No models returned");
+    models.forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m.model_id;
+      const meta = MODEL_META[m.model_id];
+      opt.textContent = meta?.tag ? `${m.model_name} — ${meta.tag}` : m.model_name;
+      select.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("Failed to load models:", err.message);
+    select.innerHTML = '<option value="ensemble">Ensemble (default)</option>';
+    setStatus("Could not load model list — using default.", "warn");
+  }
+  select.addEventListener("change", onModelChange);
+  onModelChange();
+}
+
+function onModelChange() {
+  const select = document.getElementById("demoModel");
+  const meta = MODEL_META[select.value] || {};
+  const info = document.getElementById("demoModelInfo");
+  if (meta.description) { info.textContent = meta.description; info.hidden = false; }
+  else { info.hidden = true; }
+
+  const usesThresholds = meta.usesThresholds !== false;
+  document.getElementById("dAutoThreshold").disabled  = !usesThresholds;
+  document.getElementById("dManualThreshold").disabled = !usesThresholds;
+  document.getElementById("demoSvmNote").hidden = usesThresholds;
+}
+
+function bindThresholdSliders() {
+  document.getElementById("dAutoThreshold").addEventListener("input", updateZone);
+  document.getElementById("dManualThreshold").addEventListener("input", updateZone);
+  updateZone();
+}
+
+function updateZone() {
+  const autoVal   = parseFloat(document.getElementById("dAutoThreshold").value);
+  const manualVal = parseFloat(document.getElementById("dManualThreshold").value);
+  document.getElementById("dAutoVal").textContent   = autoVal.toFixed(2);
+  document.getElementById("dManualVal").textContent = manualVal.toFixed(2);
+
+  const lo = Math.min(autoVal, manualVal);
+  const hi = Math.max(autoVal, manualVal);
+  document.getElementById("dtzSafe").style.width   = `${lo * 100}%`;
+  document.getElementById("dtzReview").style.width  = `${(hi - lo) * 100}%`;
+  document.getElementById("dtzBan").style.width    = `${(1 - hi) * 100}%`;
+  document.getElementById("dtzReviewLabel").textContent = lo.toFixed(2) + " review";
+  document.getElementById("dtzBanLabel").textContent    = hi.toFixed(2) + " ban";
+}
+
+async function runInference() {
+  const text = document.getElementById("demoText").value.trim();
+  if (!text) { setStatus("Please enter some comment text.", "warn"); return; }
+
+  const model_name       = document.getElementById("demoModel").value;
+  const auto_threshold   = parseFloat(document.getElementById("dAutoThreshold").value);
+  const manual_threshold = parseFloat(document.getElementById("dManualThreshold").value);
+
+  // Client-side threshold order guard
+  if (manual_threshold > auto_threshold) {
+    setStatus("Review threshold cannot be higher than the auto-ban threshold — please adjust the sliders.", "error");
+    return;
+  }
+
+  const btn = document.getElementById("demoBtn");
+  btn.disabled = true; btn.textContent = "Analysing…";
+  setStatus("Running inference…", "info");
+  document.getElementById("demoResult").style.display = "none";
+
+  try {
+    let res;
+    try {
+      res = await fetch("/api/demo/infer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, model_name, auto_threshold, manual_threshold }),
+      });
+    } catch {
+      throw new Error("Could not reach the server — check your connection and try again.");
+    }
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      // 503 with MODEL_UNAVAILABLE gets a specific, actionable message
+      if (res.status === 503 || errBody.error_code === "MODEL_UNAVAILABLE") {
+        const modelLabel = document.getElementById("demoModel").selectedOptions[0]?.text
+          || document.getElementById("demoModel").value;
+        throw new ModelUnavailableError(
+          `"${modelLabel}" is not available on this server. ` +
+          "Try selecting a different model from the dropdown."
+        );
+      }
+      throw new Error(errBody.error || `Server error (${res.status})`);
+    }
+
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      throw new Error("Server returned an unexpected response — please try again.");
+    }
+
+    renderResult(data);
+    setStatus("");
+  } catch (err) {
+    if (err instanceof ModelUnavailableError) {
+      setStatus(err.message, "error");
+      // Visually flag the model selector so the user knows where to act
+      const sel = document.getElementById("demoModel");
+      sel.style.outline = "2px solid #c43b3b";
+      sel.addEventListener("change", () => { sel.style.outline = ""; }, { once: true });
+    } else {
+      setStatus(err.message, "error");
+    }
+  } finally {
+    btn.disabled = false; btn.textContent = "Analyse";
+  }
+}
+
+function renderResult(data) {
+  // Defensive destructuring — guard every numeric field against null/undefined
+  const text           = data.text           ?? "";
+  const model_name     = data.model_name     ?? "unknown";
+  const toxicity       = typeof data.toxicity       === "number" ? data.toxicity       : null;
+  const auto_threshold = typeof data.auto_threshold === "number" ? data.auto_threshold : null;
+  const manual_threshold = typeof data.manual_threshold === "number" ? data.manual_threshold : null;
+  const inference_ms   = typeof data.inference_ms   === "number" ? data.inference_ms   : null;
+  const decision       = data.decision ?? "none";
+  const top_features   = Array.isArray(data.top_features) ? data.top_features : [];
+
+  // If the score is missing the result is meaningless — surface a clear error
+  if (toxicity === null) {
+    setStatus("Server returned an incomplete result (missing toxicity score). Please try again.", "error");
+    return;
+  }
+
+  document.getElementById("resCommentText").textContent = text;
+
+  const scoreBig = document.getElementById("resScoreBig");
+  scoreBig.textContent = toxicity.toFixed(3);
+  scoreBig.className = "result-score-big " + (
+    decision === "auto-ban"      ? "toxic"  :
+    decision === "manual-review" ? "review" : "safe"
+  );
+
+  const badge = document.getElementById("resDecisionBadge");
+  if (decision === "auto-ban") {
+    badge.textContent = "Auto-ban"; badge.className = "badge danger";
+  } else if (decision === "manual-review") {
+    badge.textContent = "Manual review"; badge.className = "badge warning";
+  } else {
+    badge.textContent = "No action"; badge.className = "badge success";
+  }
+
+  document.getElementById("resRuleText").textContent =
+    decision === "auto-ban"      && auto_threshold   !== null ? `toxicity ≥ ${auto_threshold.toFixed(2)} (auto-ban threshold)` :
+    decision === "manual-review" && manual_threshold !== null ? `toxicity ≥ ${manual_threshold.toFixed(2)} (review threshold)` :
+    "Below both thresholds";
+
+  document.getElementById("resModel").textContent       = model_name;
+  document.getElementById("resInferenceMs").textContent = inference_ms !== null && inference_ms > 0 ? `${inference_ms.toFixed(2)} ms` : "—";
+  document.getElementById("resAutoThr").textContent     = auto_threshold   !== null ? auto_threshold.toFixed(2)   : "—";
+  document.getElementById("resManualThr").textContent   = manual_threshold !== null ? manual_threshold.toFixed(2) : "—";
+
+  const featureList = document.getElementById("resFeatureList");
+  featureList.innerHTML = "";
+
+  if (!top_features.length) {
+    const p = document.createElement("p");
+    p.className = "shap-empty";
+    p.textContent = "No explanation available.";
+    featureList.appendChild(p);
+  } else {
+    const maxShap = Math.max(...top_features.map(f => Math.abs(f.shap ?? 0)));
+    top_features.forEach(f => {
+      const shap  = typeof f.shap  === "number" ? f.shap  : 0;
+      const value = f.value;  // may be null for some models — handled in fmt below
+      const featureName = typeof f.feature === "string" ? f.feature : "";
+      const meta  = FEATURE_LABELS[featureName] || {
+        label: featureName || "Unknown feature",
+        fmt: v => (v !== null && v !== undefined) ? String(v) : "—",
+      };
+      const isPos  = shap >= 0;
+      const barPct = maxShap > 0 ? (Math.abs(shap) / maxShap * 100).toFixed(1) : 0;
+
+      // Safe fmt call — if the feature formatter throws (e.g. null.toFixed), fall back gracefully
+      let formattedValue;
+      try {
+        formattedValue = (value !== null && value !== undefined) ? meta.fmt(value) : "—";
+      } catch {
+        formattedValue = value !== null && value !== undefined ? String(value) : "—";
+      }
+
+      // Build DOM nodes instead of innerHTML to avoid any XSS from feature names
+      const row = document.createElement("div");
+      row.className = "shap-row";
+
+      const labelDiv = document.createElement("div");
+      labelDiv.className = "shap-label";
+      labelDiv.textContent = meta.label;
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "shap-feature-name";
+      nameSpan.textContent = featureName;
+      labelDiv.appendChild(nameSpan);
+
+      const barTrack = document.createElement("div");
+      barTrack.className = "shap-bar-track";
+      const bar = document.createElement("div");
+      bar.className = `shap-bar ${isPos ? "shap-bar-pos" : "shap-bar-neg"}`;
+      bar.style.width = `${barPct}%`;
+      barTrack.appendChild(bar);
+
+      const metaDiv = document.createElement("div");
+      metaDiv.className = "shap-meta";
+      const dirSpan = document.createElement("span");
+      dirSpan.className = `shap-direction ${isPos ? "shap-dir-pos" : "shap-dir-neg"}`;
+      dirSpan.textContent = isPos ? "↑ increases risk" : "↓ reduces risk";
+      const valSpan = document.createElement("span");
+      valSpan.className = "shap-value";
+      valSpan.textContent = formattedValue;
+      metaDiv.appendChild(dirSpan);
+      metaDiv.appendChild(valSpan);
+
+      row.appendChild(labelDiv);
+      row.appendChild(barTrack);
+      row.appendChild(metaDiv);
+      featureList.appendChild(row);
+    });
+  }
+
+  document.getElementById("demoResult").style.display = "block";
+  document.getElementById("demoResult").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/** level: "info" | "warn" | "error" | "" (clear) */
+function setStatus(msg, level = "info") {
+  const el = document.getElementById("demoStatus");
+  el.textContent = msg;
+  el.style.color =
+    level === "error" ? "#c43b3b" :
+    level === "warn"  ? "#c48a3b" :
+    "var(--text-muted, #666)";
+}
+</script>
+{% endblock %}

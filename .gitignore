@@ -1,2 +1,11 @@
 *.pkl
 *.npz
+.venv
+__pycache__/
+.ipynb_checkpoints/
+.venv/
+.DS_Store
+.claude
+.coverage
+.pytest_cache/
+run_log.txt

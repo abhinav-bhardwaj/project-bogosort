@@ -1,0 +1,684 @@
+.eda-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.eda-container section {
+  margin-bottom: 36px;
+  padding: 20px 24px;
+  background: #f9f9f9;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+}
+
+.eda-container section h2 {
+  color: #333;
+  border-bottom: 3px solid #1a9850;
+  padding-bottom: 10px;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.metric-card {
+  background: white;
+  padding: 20px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.metric-card strong {
+  display: block;
+  color: #666;
+  font-size: 0.9em;
+  margin-bottom: 10px;
+}
+
+.metric-card .value {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: #1a9850;
+}
+
+.chart-container {
+  margin-bottom: 30px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.chart {
+  background: white;
+  padding: 16px;
+  border-radius: 6px;
+  margin: 16px 0;
+  min-height: 200px;
+  /* Let Plotly size itself — don't set a fixed height */
+}
+
+/* Plotly charts expand to fill their container */
+#class-distribution-chart .js-plotly-plot,
+#top-features-chart .js-plotly-plot {
+  width: 100%;
+}
+
+.controls {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.controls label {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95em;
+  cursor: pointer;
+  background: white;
+}
+
+select:hover {
+  border-color: #1a9850;
+}
+
+.insight-box {
+  background: #f0f8f5;
+  border-left: 4px solid #1a9850;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 4px;
+  font-size: 0.95em;
+  line-height: 1.6;
+}
+
+.insight-box strong {
+  color: #1a9850;
+}
+
+.warning-box {
+  background: #fffef0;
+  border-left: 4px solid #ff9800;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 4px;
+  font-size: 0.95em;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin: 15px 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+table th {
+  background: #f5f5f5;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #ddd;
+}
+
+table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+table tr:hover {
+  background: #fafafa;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  border-bottom: 2px solid #eee;
+  margin-bottom: 20px;
+}
+
+.tab-button {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 0.95em;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+  color: #1a9850;
+}
+
+.tab-button.active {
+  color: #1a9850;
+  border-bottom-color: #1a9850;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.readiness-item {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+  padding: 15px;
+  background: white;
+  border-radius: 6px;
+  border-left: 4px solid #ccc;
+  margin-bottom: 10px;
+}
+
+.readiness-item.passed {
+  border-left-color: #4caf50;
+}
+
+.readiness-item.failed {
+  border-left-color: #ff9800;
+}
+
+.readiness-icon {
+  font-weight: bold;
+  font-size: 1.3em;
+  min-width: 30px;
+}
+
+.readiness-icon.passed {
+  color: #4caf50;
+}
+
+.readiness-icon.failed {
+  color: #ff9800;
+}
+
+.eda-footer {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-size: 0.85em;
+}
+
+.eda-error {
+  background: #ffe5e5;
+  color: #d33;
+  border: 1px solid #d33;
+  padding: 20px;
+  border-radius: 4px;
+  margin: 30px 20px;
+  text-align: center;
+}
+
+/* ── Feature Means / Occurrence shared styles ────────────────────────── */
+
+.fm-name {
+    vertical-align: middle;
+}
+
+.fm-name code {
+    font-size: 11px;
+    display: block;
+    color: #2a4b8d;
+}
+
+.fm-label {
+    display: block;
+    font-size: 10px;
+    color: #888;
+    margin-top: 1px;
+}
+
+.fm-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+}
+
+.fm-bar {
+    height: 8px;
+    border-radius: 2px;
+    min-width: 2px;
+    flex-shrink: 0;
+    max-width: 80%;
+}
+
+/* ── Feature Catalog ─────────────────────────────────────────────────── */
+
+.fc-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.fc-search {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    width: 280px;
+}
+
+.fc-search:focus {
+    outline: none;
+    border-color: #1a9850;
+}
+
+.fc-count {
+    font-size: 12px;
+    color: #999;
+    margin-left: auto;
+}
+
+.fc-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+}
+
+.fc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.fc-table thead th {
+    background: #f5f5f5;
+    padding: 9px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    border-bottom: 2px solid #ddd;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.fc-table tbody td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: top;
+    line-height: 1.5;
+}
+
+.fc-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.fc-table tbody tr:hover td {
+    background: #f9fff9;
+}
+
+.fc-group-cell {
+    font-weight: 600;
+    font-size: 12px;
+    color: #555;
+    white-space: nowrap;
+    vertical-align: top !important;
+    border-right: 2px solid #e8e8e8;
+    padding-top: 10px !important;
+}
+
+.fc-name code {
+    font-size: 12px;
+    background: #f0f4ff;
+    padding: 2px 5px;
+    border-radius: 3px;
+    color: #2a4b8d;
+    white-space: nowrap;
+}
+
+.fc-desc {
+    color: #444;
+    font-size: 12px;
+}
+
+.fc-empty {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 20px !important;
+}
+
+.fc-type {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+    font-family: monospace;
+}
+
+.fc-type-float   { background: #e8f0fe; color: #1a56db; }
+.fc-type-integer { background: #fef3e2; color: #b45309; }
+.fc-type-binary  { background: #f0fdf4; color: #166534; }
+
+/* ── Identity Risk Analysis ─────────────────────────────────────────── */
+
+.ir-unavailable {
+    color: var(--wp-muted, #72777d);
+    font-style: italic;
+}
+
+.ir-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.ir-summary-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 14px 16px;
+}
+
+.ir-summary-label {
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+}
+
+.ir-summary-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #202122;
+    line-height: 1.1;
+}
+
+.ir-summary-sub {
+    font-size: 11px;
+    color: #888;
+    margin-top: 4px;
+}
+
+.ir-table-wrap {
+    overflow-x: auto;
+    margin: 16px 0 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+}
+
+.ir-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.ir-table thead th {
+    background: #f5f5f5;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    border-bottom: 2px solid #ddd;
+    white-space: nowrap;
+}
+
+.ir-table tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+}
+
+.ir-table tbody td:nth-child(3) {
+    min-width: 240px;
+    padding-right: 20px;
+}
+
+.ir-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.ir-table tbody tr:hover td {
+    background: #fafafa;
+}
+
+.ir-group-name {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ir-count {
+    white-space: nowrap;
+}
+
+.ir-pct {
+    font-size: 11px;
+    color: #888;
+}
+
+.ir-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 220px;
+    position: relative;
+}
+
+.ir-bar {
+    height: 10px;
+    border-radius: 3px;
+    min-width: 4px;
+    flex-grow: 1;
+    max-width: 140px;
+    transition: width 0.3s ease;
+}
+
+.ir-rr-val {
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    min-width: 50px;
+    text-align: right;
+}
+
+.ir-tier {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ir-high     { background: #ffebee; color: #c62828; }
+.ir-elevated { background: #fff3e0; color: #e65100; }
+.ir-baseline { background: #f5f5f5; color: #555; }
+.ir-low      { background: #e8f5e9; color: #2e7d32; }
+
+.ir-chart {
+    margin-top: 20px;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.ir-footnote {
+    font-size: 11px;
+    color: #888;
+    margin: 8px 0 0;
+    line-height: 1.5;
+}
+
+/* ── Feature Distribution Explorer ──────────────────────────────────── */
+
+/* Controls row (search + sort buttons) */
+.fd-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+/* Shared search / sort / table styles (Feature Means, Occurrence, Distribution Explorer) */
+.fe-search {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    width: 200px;
+}
+.fe-search:focus { outline: none; border-color: #1a9850; }
+
+.fe-sort-btns { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.fe-sort-label { font-size: 12px; color: #666; margin-right: 2px; }
+
+.fe-sort-btn {
+    padding: 4px 10px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background: white;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.fe-sort-btn:hover { background: #f0f0f0; }
+.fe-sort-btn.active { background: #1a9850; color: white; border-color: #1a9850; }
+
+.fe-count { font-size: 11px; color: #999; margin-left: auto; }
+
+.fe-table-wrap {
+    overflow-x: auto;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.fe-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.fe-table thead th {
+    background: #f5f5f5;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #ddd;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    white-space: nowrap;
+}
+.fe-table td { padding: 5px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+
+/* Two-panel layout: feature list | chart */
+.fd-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+.fd-list-wrap {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    overflow-y: auto;
+    max-height: 420px;
+    background: white;
+}
+
+.fd-list-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 7px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.fd-list-row:last-child { border-bottom: none; }
+.fd-list-row:hover      { background: #f5fff8; }
+.fd-list-row.selected   { background: #e8f5e9; border-left: 3px solid #1a9850; padding-left: 7px; }
+
+.fd-list-name {
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: #222;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fd-list-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.fd-list-bar {
+    height: 5px;
+    border-radius: 2px;
+    min-width: 2px;
+    flex-shrink: 0;
+}
+
+.fd-list-corr {
+    font-size: 10px;
+    color: #666;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.fd-chart-panel {
+    min-height: 200px;
+}
+
+.fd-hint {
+    color: #aaa;
+    font-style: italic;
+    font-size: 13px;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .fd-layout {
+        grid-template-columns: 1fr;
+    }
+    .fd-list-wrap {
+        max-height: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .chart {
+    height: 300px;
+  }
+
+  section {
+    padding: 15px;
+  }
+}

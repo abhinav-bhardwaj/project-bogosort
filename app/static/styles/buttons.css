@@ -1,0 +1,114 @@
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.actions.full {
+  grid-column: 1 / -1;
+}
+
+.btn {
+  padding: 10px 16px;
+  border-radius: 3px;
+  border: 1px solid var(--wp-border);
+  background: var(--wp-accent);
+  color: var(--wp-text);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.btn:hover {
+  background: #d9d9d9;
+  border-color: #808080;
+}
+
+.btn:active {
+  background: #c9c9c9;
+}
+
+.btn.primary {
+  background: var(--wp-link);
+  color: white;
+  border-color: var(--wp-link);
+}
+
+.btn.primary:hover {
+  background: var(--wp-link-hover);
+  border-color: var(--wp-link-hover);
+}
+
+.btn.secondary {
+  background: var(--wp-accent);
+}
+
+.btn.secondary:hover {
+  background: #d9d9d9;
+}
+
+.btn.danger {
+  background: #fee7e6;
+  color: var(--wp-danger);
+  border-color: var(--wp-danger);
+}
+
+.btn.danger:hover {
+  background: #f8d7da;
+}
+
+.btn.small {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge.danger {
+  background: #fee7e6;
+  color: var(--wp-danger);
+}
+
+.badge.neutral {
+  background: var(--wp-accent);
+  color: var(--wp-muted);
+}
+
+.badge.success {
+  background: #e6f4e6;
+  color: #006600;
+}
+
+@media (max-width: 768px) {
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions .btn {
+    width: 100%;
+  }
+}
