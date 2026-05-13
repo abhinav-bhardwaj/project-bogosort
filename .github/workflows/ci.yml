@@ -81,6 +81,7 @@ jobs:
           # Overlay slim tree on top of HF Space, deleting stale files but preserving *.pkl
           rsync -av --delete \
             --exclude='.git' \
+            --exclude='.gitattributes' \
             --exclude='*.pkl' \
             /tmp/deploy/ /tmp/space/
           git add -A
