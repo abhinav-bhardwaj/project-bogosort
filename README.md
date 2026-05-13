@@ -172,7 +172,7 @@ All text features are computed by `DenseFeatureTransformer` — a stateless, skl
 | **Elongation** | `elongated_token_count` (e.g. "cooool"), `consecutive_punct_count` (e.g. "!!!") |
 | **URLs / IPs** | `url_count`, `ip_count`, `has_url_or_ip` |
 | **Syntactic** | `negation_count`, `sentence_count`, `avg_sentence_length` |
-| **Identity mentions** | `identity_mention_count` + binary flags for race, gender, sexuality, religion, disability, nationality |
+| **Identity mentions** | `identity_mention_count`, `identity_race`, `identity_gender`, `identity_sexuality`, `identity_religion`,`identity_disability`,`identity_nationality`|
 
 Features are computed once, scaled with a `StandardScaler`, and cached to disk — all models share the same pre-computed feature matrix so GridSearchCV folds do not redundantly re-run the transformer.
 
