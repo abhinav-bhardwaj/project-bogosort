@@ -1,12 +1,4 @@
-﻿---
-title: Wikipedia Toxic Comment Classifier
-
-sdk: docker
-
-app_port: 7860
----
-
-# Project Bogosort - Toxic Comment Classifier
+﻿# Project Bogosort - Toxic Comment Classifier
 
 ## Overview
 
