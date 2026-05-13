@@ -90,6 +90,13 @@ def main():
         run_error_analysis(model_name, verbose=False)
     print(f"\n[error analysis] finished in {time.time() - t0:.1f}s")
 
+    # Generate model_evaluations.json from the freshly trained artifacts
+    banner("Generating model_evaluations.json")
+    from analysis_and_inference.models.generate_evaluations_json import main as generate_evaluations_json
+    t0 = time.time()
+    generate_evaluations_json()
+    print(f"\n[generate_evaluations_json] finished in {time.time() - t0:.1f}s")
+
     banner(f"DONE in {time.time() - overall_start:.1f}s")
 
 

@@ -9,7 +9,7 @@ The application is a **Flask** web service. Routes are organised into five bluep
 | `main` | `/` | HTML page views |
 | `api` | `/api` | JSON REST API |
 | `dashboard` | `/dashboard` | Dashboard page views |
-| `bogosort_demo` | `/sort-demo` | Bogosort demo (HTML + actions) |
+| `bogosort_demo` | `/sort-demo` | Sorting demo (HTML + actions) |
 | `eda` | `/eda` | Exploratory data analysis views and data API |
 
 All JSON API endpoints are under `/api`. Request bodies must be `Content-Type: application/json`. Responses are JSON unless noted otherwise.
@@ -77,7 +77,7 @@ Score a single piece of text for toxicity without persisting anything.
 
 | Field | Type | Required | Default | Notes |
 |---|---|---|---|---|
-| `text` | string | yes | — | Max 10 000 characters |
+| `text` | string | yes | | Max 10 000 characters |
 | `model_name` | string | no | `DEFAULT_MODEL` | Must be a loaded model ID |
 | `auto_threshold` | float | no | `0.75` | `0.0 - 1.0` |
 | `manual_threshold` | float | no | `0.55` | `0.0 - 1.0`, ≤ `auto_threshold` |
@@ -151,7 +151,7 @@ Return evaluation report for a specific model.
 |---|---|
 | `model_id` | Model identifier |
 
-**Response `200`** — evaluation object with attached image artifacts and sample data.
+**Response `200`**: evaluation object with attached image artifacts and sample data.
 
 **Errors**
 
@@ -265,13 +265,13 @@ Fetch a Wikipedia article and its comments, score them for toxicity, and store t
 
 | Field | Type | Required | Default | Notes |
 |---|---|---|---|---|
-| `url` | string | yes | — | Must be a valid Wikipedia article URL |
+| `url` | string | yes | | Must be a valid Wikipedia article URL |
 | `limit` | integer | no | `30` | `1 - 200`; number of comments to fetch |
 | `auto_threshold` | float | no | `0.75` | `0.0 - 1.0` |
 | `manual_threshold` | float | no | `0.55` | `0.0 - 1.0`, ≤ `auto_threshold` |
 | `model_name` | string | no | `DEFAULT_MODEL` | Must be a loaded model ID |
 
-**Response `200`** — article summary object (same shape as one element of `GET /api/articles`).
+**Response `200`**: article summary object (same shape as one element of `GET /api/articles`).
 
 **Errors**
 
@@ -298,7 +298,7 @@ Get a single article, optionally with its comments.
 | Parameter | Type | Default | Notes |
 |---|---|---|---|
 | `include_comments` | boolean | `true` | Set to `false` to omit the `comments` array |
-| `decision` | string | — | Filter comments; see [decision values](#decision-values) + `"flagged"` |
+| `decision` | string | | Filter comments; see [decision values](#decision-values) + `"flagged"` |
 | `sort` | string | `toxicity_desc` | See [sort options](#sort-options-comments) |
 | `limit` | integer | `50` | `1 - 200` |
 | `offset` | integer | `0` | `0 - 1 000 000` |
@@ -396,7 +396,7 @@ List comments for an article with filtering, sorting, and pagination.
 
 | Parameter | Type | Default | Notes |
 |---|---|---|---|
-| `decision` | string | — | Filter; see [decision values](#decision-values) + `"flagged"` |
+| `decision` | string | | Filter; see [decision values](#decision-values) + `"flagged"` |
 | `sort` | string | `toxicity_desc` | See [sort options](#sort-options-comments) |
 | `limit` | integer | `50` | `1 - 200` |
 | `offset` | integer | `0` | `0 - 1 000 000` |
@@ -520,7 +520,7 @@ Return the full precomputed EDA dataset.
 
 Return only the overview statistics section of the EDA data.
 
-**Response `200`** — overview statistics object.
+**Response `200`**: overview statistics object.
 
 **Errors**
 
@@ -534,7 +534,7 @@ Return only the overview statistics section of the EDA data.
 
 Return only the top-features section of the EDA data.
 
-**Response `200`** — array of feature objects.
+**Response `200`**: array of feature objects.
 
 **Errors**
 
@@ -556,9 +556,8 @@ These routes return rendered HTML and are not intended for programmatic use.
 | GET | `/articles/<article_id>/` | Article detail page |
 | GET | `/articles/<article_id>/comments/<comment_id>/` | Comment detail page |
 | GET | `/demo/` | Toxicity demo UI |
-| GET | `/dashboard/` | Moderation dashboard |
 | GET | `/dashboard/nerdy/` | Extended statistics dashboard |
 | GET | `/eda/` | EDA dashboard |
-| GET / POST | `/sort-demo/` | Bogosort demo — GET shows current state, POST starts a new sort |
+| GET / POST | `/sort-demo/` | Bogosort demo: GET shows current state, POST starts a new sort |
 | POST | `/sort-demo/stop` | Stop an in-progress sort |
 | GET | `/sort-demo/reset` | Reset the sort session |
