@@ -1,0 +1,127 @@
+.banner-donation {
+  background: linear-gradient(135deg, #ffe5b4 0%, #ffd699 100%);
+  border-bottom: 1px solid #d4a574;
+  padding: 10px 0;
+  box-shadow: var(--shadow-light);
+}
+
+.banner-content {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.banner-text {
+  font-size: 13px;
+  color: #3a3a3a;
+  flex: 1;
+  min-width: 200px;
+}
+
+.banner-text strong {
+  font-weight: 700;
+  color: #202122;
+}
+
+.banner-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.banner-btn {
+  padding: 7px 14px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.banner-btn-primary {
+  background: #d33;
+  color: white;
+  border-color: #b3000b;
+}
+
+.banner-btn-primary:hover {
+  background: #b3000b;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.banner-btn-secondary {
+  background: transparent;
+  color: #0645ad;
+  border-color: #0645ad;
+}
+
+.banner-btn-secondary:hover {
+  background: rgba(6, 69, 173, 0.05);
+  border-color: #2a4b8d;
+  color: #2a4b8d;
+}
+
+.banner-close {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #3a3a3a;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  transition: all 0.15s ease;
+}
+
+.banner-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .banner-content {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .banner-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-content {
+    flex-direction: column;
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .banner-text {
+    font-size: 13px;
+    min-width: auto;
+  }
+
+  .banner-actions {
+    width: 100%;
+  }
+
+  .banner-btn {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+}

@@ -1,0 +1,175 @@
+/* ── Trend sparklines (article listing cards) ── */
+.article-card canvas {
+  width: 100% !important;
+  height: 160px !important;
+  display: block;
+  border: none;
+  border-radius: 0 0 3px 3px;
+  background: var(--wp-card-bg);
+  margin: 8px -8px -8px -8px;
+}
+
+/* ── Chart.js wrappers on the model evaluation page ── */
+#rocContainer,
+#prContainer,
+#perturbContainer,
+#compareContainer {
+  position: relative;
+  width: 100%;
+  height: 400px;
+}
+
+#rocContainer canvas,
+#prContainer canvas,
+#perturbContainer canvas,
+#compareContainer canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  background: var(--wp-card-bg);
+  border: 1px solid var(--wp-border);
+  border-radius: 4px;
+}
+
+/* ── Artifact images (calibration, feature importance, etc.) ── */
+#rocContainer img,
+#prContainer img,
+#calibrationContainer img,
+#featureImportanceContainer img,
+#errorConfidenceContainer img,
+#errorPatternsContainer img {
+  max-width: 90%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--wp-border);
+  border-radius: 6px;
+  margin: 12px auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Model comparison toggles ── */
+.compare-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.compare-toggle {
+  padding: 4px 12px;
+  border: 1px solid var(--wp-border);
+  border-radius: 3px;
+  background: var(--wp-card-bg);
+  color: var(--wp-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.compare-toggle:hover { background: #f0f0f0; color: var(--wp-text); }
+
+.compare-toggle.active {
+  background: #2a4b8d;
+  color: #fff;
+  border-color: #2a4b8d;
+}
+
+/* ── Comparison table ── */
+.ct-wrap {
+  overflow-x: auto;
+  margin-top: 4px;
+}
+
+.ct-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ct-table thead th {
+  background: var(--wp-accent);
+  padding: 9px 14px;
+  text-align: right;
+  font-weight: 600;
+  font-size: 12px;
+  border-bottom: 2px solid var(--wp-border);
+  white-space: nowrap;
+}
+
+.ct-table thead th:first-child { text-align: left; }
+
+.ct-table tbody td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--wp-border);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ct-table tbody tr:last-child td { border-bottom: none; }
+.ct-table tbody tr:hover td { background: var(--wp-accent); }
+
+.ct-name {
+  text-align: left !important;
+  font-weight: 600;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.ct-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.ct-best {
+  font-weight: 700;
+  color: #1a6b30;
+}
+
+.ct-note {
+  font-size: 11px;
+  color: var(--wp-muted);
+  margin: 6px 0 0;
+}
+
+/* ── EDA Plotly chart containers ── */
+#class-distribution-chart,
+#top-features-chart {
+  width: 100%;
+  min-height: 400px;
+}
+
+@media (max-width: 768px) {
+  .article-card canvas {
+    height: 130px !important;
+  }
+
+  #rocContainer,
+  #prContainer,
+  #perturbContainer,
+  #compareContainer {
+    height: 300px;
+  }
+
+  #rocContainer img,
+  #prContainer img,
+  #calibrationContainer img,
+  #featureImportanceContainer img,
+  #errorConfidenceContainer img,
+  #errorPatternsContainer img {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  #rocContainer,
+  #prContainer,
+  #perturbContainer,
+  #compareContainer {
+    height: 240px;
+  }
+}

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Article Review{% endblock %}
+
+{% block body_attrs %}data-article-id="{{ article_id }}"{% endblock %}
+
+{% block main %}
+<main class="container">
+  <section class="content full" id="articleDetail">
+
+    <!-- Page header -->
+    <div class="article-page-header">
+      <h1 id="articleTitle" class="article-page-title"></h1>
+      <div class="article-page-meta">
+        <a id="articleLink" class="article-wiki-link" target="_blank" rel="noopener">↗ Open on Wikipedia</a>
+      </div>
+      <div class="article-summary-wrap">
+        <p id="articleSummary" class="article-summary-text"></p>
+        <button id="summaryToggle" class="comment-toggle" hidden>Show more</button>
+      </div>
+      <p id="articleError" class="article-error-text"></p>
+      <div id="inferenceStats" class="inference-stats" hidden></div>
+    </div>
+
+    <!-- Threshold controls -->
+    <div class="threshold-panel">
+      <div class="threshold-panel-row">
+        <div class="threshold-item">
+          <label for="autoThreshold">Auto-ban ≥ <strong id="autoThresholdValue"></strong></label>
+          <input id="autoThreshold" type="range" min="0" max="1" step="0.01">
+        </div>
+        <div class="threshold-item">
+          <label for="manualThreshold">Manual review ≥ <strong id="manualThresholdValue"></strong></label>
+          <input id="manualThreshold" type="range" min="0" max="1" step="0.01">
+        </div>
+        <button id="applyThresholds" class="btn primary">Apply</button>
+      </div>
+      <p class="threshold-note">
+        Score ≥ auto-ban threshold → automatically removed.
+        Score ≥ review threshold → flagged for moderator decision.
+      </p>
+    </div>
+
+    <!-- Auto-ban queue -->
+    <div class="queue-section">
+      <h2 class="queue-heading">Auto-ban queue</h2>
+      <p class="queue-subheading">Comments above the auto-ban threshold — removed automatically.</p>
+      <div class="queue-controls">
+        <label for="autoSort">Sort</label>
+        <select id="autoSort">
+          <option value="toxicity_desc">Toxicity ↓</option>
+          <option value="toxicity_asc">Toxicity ↑</option>
+          <option value="timestamp_desc">Newest first</option>
+          <option value="timestamp_asc">Oldest first</option>
+        </select>
+        <label for="autoLimit">Per page</label>
+        <select id="autoLimit">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50" selected>50</option>
+        </select>
+        <button id="autoPrev" class="btn small">← Prev</button>
+        <span id="autoPageInfo" class="page-info"></span>
+        <button id="autoNext" class="btn small">Next →</button>
+      </div>
+      <table class="queue-table" id="autoBanTable">
+        <thead>
+          <tr><th>Timestamp</th><th>Author</th><th>Comment</th><th>Score</th><th>Status</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Manual review queue -->
+    <div class="queue-section">
+      <h2 class="queue-heading queue-heading--review">Manual review queue</h2>
+      <p class="queue-subheading">Comments flagged for your decision — click Ban or Not ban to act.</p>
+      <div class="queue-controls">
+        <label for="manualSort">Sort</label>
+        <select id="manualSort">
+          <option value="toxicity_desc">Toxicity ↓</option>
+          <option value="toxicity_asc">Toxicity ↑</option>
+          <option value="timestamp_desc">Newest first</option>
+          <option value="timestamp_asc">Oldest first</option>
+        </select>
+        <label for="manualLimit">Per page</label>
+        <select id="manualLimit">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50" selected>50</option>
+        </select>
+        <button id="manualPrev" class="btn small">← Prev</button>
+        <span id="manualPageInfo" class="page-info"></span>
+        <button id="manualNext" class="btn small">Next →</button>
+      </div>
+      <table class="queue-table" id="manualTable">
+        <thead>
+          <tr><th>Timestamp</th><th>Author</th><th>Comment</th><th>Score</th><th>Moderator action</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- All comments -->
+    <div class="queue-section">
+      <h2 class="queue-heading">All comments</h2>
+      <p class="queue-subheading">Full list of fetched edit-summary comments.</p>
+      <div class="queue-controls">
+        <label for="allSort">Sort</label>
+        <select id="allSort">
+          <option value="decision_asc" selected>Decision category</option>
+          <option value="toxicity_desc">Toxicity ↓</option>
+          <option value="toxicity_asc">Toxicity ↑</option>
+          <option value="timestamp_desc">Newest first</option>
+          <option value="timestamp_asc">Oldest first</option>
+        </select>
+        <label for="allLimit">Per page</label>
+        <select id="allLimit">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50" selected>50</option>
+        </select>
+        <button id="allPrev" class="btn small">← Prev</button>
+        <span id="allPageInfo" class="page-info"></span>
+        <button id="allNext" class="btn small">Next →</button>
+      </div>
+      <table class="queue-table" id="allTable">
+        <thead>
+          <tr><th>Timestamp</th><th>Author</th><th>Comment</th><th>Score</th><th>Decision</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+  </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+  <script src="/static/js/article.js"></script>
+{% endblock %}

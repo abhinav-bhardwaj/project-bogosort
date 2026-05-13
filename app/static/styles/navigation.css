@@ -1,0 +1,74 @@
+.topbar {
+  background: var(--wp-header-bg);
+  border-bottom: 1px solid var(--wp-border);
+  padding: 10px 0;
+  box-shadow: var(--shadow-light);
+  position: sticky;
+  top: 0;
+  z-index: 99;
+}
+
+.topbar-inner {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 16px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.brand-logo-img {
+  height: 48px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.top-links {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 8px 16px;
+  border-radius: 6px;
+  box-shadow: var(--shadow-light);
+}
+
+.top-links a {
+  font-size: 13px;
+  color: #2a4b8d;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.top-links a:hover {
+  background: #e2e6ea;
+  color: #1d3557;
+}
+
+.top-links a:active {
+  background: #d6d8db;
+  color: #1d3557;
+}
+
+@media (max-width: 480px) {
+  .topbar-inner {
+    padding: 0 12px;
+    gap: 12px;
+  }
+
+  .brand-logo-img {
+    height: 36px;
+  }
+}

@@ -1,0 +1,155 @@
+/* ── Two-column layout for pages with a sidebar outline nav ─────────── */
+.nerdy-layout,
+.eda-layout {
+  display: grid;
+  grid-template-columns: 196px 1fr;
+  align-items: start;
+  min-height: calc(100vh - 45px);
+}
+
+/* ── Sidebar outline nav ─────────────────────────────────────────────── */
+.outline-nav {
+  position: sticky;
+  top: 45px;
+  height: calc(100vh - 45px);
+  overflow-y: auto;
+  background: var(--wp-card-bg);
+  border-right: 1px solid var(--wp-border);
+  padding: 14px 0 24px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--wp-border) transparent;
+}
+
+.outline-nav::-webkit-scrollbar { width: 4px; }
+.outline-nav::-webkit-scrollbar-thumb {
+  background: var(--wp-border);
+  border-radius: 2px;
+}
+
+.outline-nav-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--wp-muted);
+  padding: 0 12px 10px;
+  border-bottom: 1px solid var(--wp-border);
+  margin-bottom: 6px;
+}
+
+.outline-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.outline-nav li { margin: 0; }
+
+.outline-nav a {
+  display: block;
+  padding: 5px 12px 5px 14px;
+  font-size: 12px;
+  color: var(--wp-text);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  line-height: 1.4;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+
+.outline-nav a:hover {
+  background: var(--wp-accent);
+  color: var(--wp-link);
+  text-decoration: none;
+}
+
+.outline-nav a.active {
+  border-left-color: var(--wp-link);
+  color: var(--wp-link);
+  font-weight: 600;
+  background: #eef2fb;
+}
+
+/* Section group label (optional sub-headings in the nav) */
+.outline-nav-group {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--wp-muted);
+  padding: 10px 12px 3px;
+}
+
+/* ── Content columns ─────────────────────────────────────────────────── */
+.nerdy-layout .content {
+  padding: 20px 28px 48px;
+  min-width: 0;
+}
+
+/* h2 anchors need clearance for the sticky topbar */
+.nerdy-layout .content h2,
+.eda-layout section h2 {
+  scroll-margin-top: 56px;
+}
+
+.eda-layout .eda-container {
+  min-width: 0;
+  max-width: none;
+}
+
+/* ── Tablet: collapse to horizontal strip ────────────────────────────── */
+@media (max-width: 900px) {
+  .nerdy-layout,
+  .eda-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .outline-nav {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--wp-border);
+    padding: 8px 0 4px;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .outline-nav-title {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding: 4px 10px 4px 12px;
+    flex-shrink: 0;
+  }
+
+  .outline-nav ul {
+    display: flex;
+    flex-wrap: nowrap;
+  }
+
+  .outline-nav a {
+    padding: 4px 10px;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+  }
+
+  .outline-nav a.active {
+    border-left-color: transparent;
+    border-bottom-color: var(--wp-link);
+    background: none;
+  }
+
+  .outline-nav-group { display: none; }
+
+  .nerdy-layout .content {
+    padding: 16px 16px 40px;
+  }
+}
+
+/* ── Mobile: hide nav ────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .outline-nav { display: none; }
+}
