@@ -45,36 +45,48 @@ jobs:
           mkdir -p /tmp/deploy
           cp -r app /tmp/deploy/
           cp Dockerfile wsgi.py pyproject.toml uv.lock README.md /tmp/deploy/
-          mkdir -p /tmp/deploy/analysis_and_inference/features
+          # Copy full analysis_and_inference source (~144 KB of .py files for all models),
+          # excluding tests, __pycache__, large data, and existing outputs.
+          # The .pkl files come from HF (uploaded once, preserved across deploys).
+          rsync -av \
+            --exclude='__pycache__' \
+            --exclude='.pytest_cache' \
+            --exclude='tests/' \
+            --exclude='conftest.py' \
+            --exclude='*.pkl' \
+            --exclude='*.npz' \
+            --exclude='*.csv' \
+            analysis_and_inference/ /tmp/deploy/analysis_and_inference/
+          # Re-create empty outputs/ dirs so HF-uploaded .pkl paths exist
+          mkdir -p /tmp/deploy/analysis_and_inference/models/baseline/outputs
+          mkdir -p /tmp/deploy/analysis_and_inference/models/lasso_log_reg/outputs
+          mkdir -p /tmp/deploy/analysis_and_inference/models/ridge_log_reg/outputs
+          mkdir -p /tmp/deploy/analysis_and_inference/models/random_forest/outputs
+          mkdir -p /tmp/deploy/analysis_and_inference/models/svm/outputs
           mkdir -p /tmp/deploy/analysis_and_inference/models/ensemble/outputs
-          mkdir -p /tmp/deploy/analysis_and_inference/models/split_and_features
-          mkdir -p /tmp/deploy/analysis_and_inference/EDA
-          cp analysis_and_inference/__init__.py /tmp/deploy/analysis_and_inference/ 2>/dev/null || true
-          cp analysis_and_inference/features/build_features.py /tmp/deploy/analysis_and_inference/features/
-          cp analysis_and_inference/features/__init__.py /tmp/deploy/analysis_and_inference/features/ 2>/dev/null || true
-          cp analysis_and_inference/models/inference.py /tmp/deploy/analysis_and_inference/models/
-          cp analysis_and_inference/models/_common.py /tmp/deploy/analysis_and_inference/models/
-          cp analysis_and_inference/models/__init__.py /tmp/deploy/analysis_and_inference/models/ 2>/dev/null || true
-          cp analysis_and_inference/models/ensemble/outputs/ensemble_soft_vote_tuned.pkl \
-             /tmp/deploy/analysis_and_inference/models/ensemble/outputs/
-          cp analysis_and_inference/models/split_and_features/features.pkl \
-             /tmp/deploy/analysis_and_inference/models/split_and_features/
-          cp analysis_and_inference/EDA/eda_cache.json /tmp/deploy/analysis_and_inference/EDA/ 2>/dev/null || true
           find /tmp/deploy -type d -name __pycache__ -prune -exec rm -rf {} +
           find /tmp/deploy -type d -name .pytest_cache -prune -exec rm -rf {} +
           du -sh /tmp/deploy
 
-      - name: Push slim tree to Hugging Face Space
+      - name: Sync slim tree into HF Space (preserves uploaded .pkl files)
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_NAME: ${{ secrets.HF_NAME }}
         run: |
-          cd /tmp/deploy
-          git init -b main
+          SPACE_URL="https://${HF_NAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_NAME}/Wikipedia-Toxic-Comment-Classifier"
+          git clone "$SPACE_URL" /tmp/space
+          cd /tmp/space
           git config user.email "deploy@github-actions"
           git config user.name "github-actions"
-          git add .
-          git commit -m "Deploy from GitHub commit ${GITHUB_SHA}"
-          git push --force \
-            "https://${HF_NAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_NAME}/Wikipedia-Toxic-Comment-Classifier" \
-            main:main
+          # Overlay slim tree on top of HF Space, deleting stale files but preserving *.pkl
+          rsync -av --delete \
+            --exclude='.git' \
+            --exclude='*.pkl' \
+            /tmp/deploy/ /tmp/space/
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to deploy."
+          else
+            git commit -m "Deploy from GitHub commit ${GITHUB_SHA}"
+            git push origin HEAD:main
+          fi
