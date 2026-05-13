@@ -22,8 +22,8 @@ All JSON API endpoints are under `/api`. Request bodies must be `Content-Type: a
 
 | Parameter | Default | Range | Rule |
 |---|---|---|---|
-| `auto_threshold` | `0.75` | `0.0 – 1.0` | Comments at or above this score are automatically banned |
-| `manual_threshold` | `0.55` | `0.0 – 1.0` | Comments at or above this score are queued for manual review |
+| `auto_threshold` | `0.75` | `0.0 - 1.0` | Comments at or above this score are automatically banned |
+| `manual_threshold` | `0.55` | `0.0 - 1.0` | Comments at or above this score are queued for manual review |
 
 `manual_threshold` must always be ≤ `auto_threshold`.
 
@@ -79,8 +79,8 @@ Score a single piece of text for toxicity without persisting anything.
 |---|---|---|---|---|
 | `text` | string | yes | — | Max 10 000 characters |
 | `model_name` | string | no | `DEFAULT_MODEL` | Must be a loaded model ID |
-| `auto_threshold` | float | no | `0.75` | `0.0 – 1.0` |
-| `manual_threshold` | float | no | `0.55` | `0.0 – 1.0`, ≤ `auto_threshold` |
+| `auto_threshold` | float | no | `0.75` | `0.0 - 1.0` |
+| `manual_threshold` | float | no | `0.55` | `0.0 - 1.0`, ≤ `auto_threshold` |
 
 **Response `200`**
 
@@ -171,7 +171,7 @@ Return the evaluation report for one model, defaulting to the first available.
 |---|---|---|---|
 | `model_id` | string | no | Model to fetch; omit to get the first model |
 
-**Response `200`** — same shape as `GET /api/models/<model_id>/evaluation`.
+**Response `200`** - same shape as `GET /api/models/<model_id>/evaluation`.
 
 **Errors**
 
@@ -202,7 +202,7 @@ Serve a model evaluation image artifact.
 - `error_confidence_distribution.png`
 - `error_patterns_by_feature.png`
 
-**Response `200`** — binary PNG image (`image/png`).
+**Response `200`** - binary PNG image (`image/png`).
 
 **Errors**
 
@@ -266,9 +266,9 @@ Fetch a Wikipedia article and its comments, score them for toxicity, and store t
 | Field | Type | Required | Default | Notes |
 |---|---|---|---|---|
 | `url` | string | yes | — | Must be a valid Wikipedia article URL |
-| `limit` | integer | no | `30` | `1 – 200`; number of comments to fetch |
-| `auto_threshold` | float | no | `0.75` | `0.0 – 1.0` |
-| `manual_threshold` | float | no | `0.55` | `0.0 – 1.0`, ≤ `auto_threshold` |
+| `limit` | integer | no | `30` | `1 - 200`; number of comments to fetch |
+| `auto_threshold` | float | no | `0.75` | `0.0 - 1.0` |
+| `manual_threshold` | float | no | `0.55` | `0.0 - 1.0`, ≤ `auto_threshold` |
 | `model_name` | string | no | `DEFAULT_MODEL` | Must be a loaded model ID |
 
 **Response `200`** — article summary object (same shape as one element of `GET /api/articles`).
@@ -300,8 +300,8 @@ Get a single article, optionally with its comments.
 | `include_comments` | boolean | `true` | Set to `false` to omit the `comments` array |
 | `decision` | string | — | Filter comments; see [decision values](#decision-values) + `"flagged"` |
 | `sort` | string | `toxicity_desc` | See [sort options](#sort-options-comments) |
-| `limit` | integer | `50` | `1 – 200` |
-| `offset` | integer | `0` | `0 – 1 000 000` |
+| `limit` | integer | `50` | `1 - 200` |
+| `offset` | integer | `0` | `0 - 1 000 000` |
 
 **Response `200`**
 
@@ -362,8 +362,8 @@ Update the toxicity thresholds for an article. Re-assigns `decision` and `is_fla
 
 | Field | Type | Required | Default | Notes |
 |---|---|---|---|---|
-| `auto_threshold` | float | no | `0.75` | `0.0 – 1.0` |
-| `manual_threshold` | float | no | `0.55` | `0.0 – 1.0`, ≤ `auto_threshold` |
+| `auto_threshold` | float | no | `0.75` | `0.0 - 1.0` |
+| `manual_threshold` | float | no | `0.55` | `0.0 - 1.0`, ≤ `auto_threshold` |
 
 **Response `200`**
 
@@ -398,8 +398,8 @@ List comments for an article with filtering, sorting, and pagination.
 |---|---|---|---|
 | `decision` | string | — | Filter; see [decision values](#decision-values) + `"flagged"` |
 | `sort` | string | `toxicity_desc` | See [sort options](#sort-options-comments) |
-| `limit` | integer | `50` | `1 – 200` |
-| `offset` | integer | `0` | `0 – 1 000 000` |
+| `limit` | integer | `50` | `1 - 200` |
+| `offset` | integer | `0` | `0 - 1 000 000` |
 
 **Response `200`**
 
