@@ -1,5 +1,5 @@
-"""
-main.py — core page routes for the Flask frontend
+﻿"""
+main.py - core page routes for the Flask frontend
 
 This module defines lightweight navigation routes for the main user-facing
 pages of the application. Routes are intentionally limited to template rendering, while moderation,

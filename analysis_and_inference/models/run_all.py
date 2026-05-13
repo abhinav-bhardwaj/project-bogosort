@@ -1,4 +1,4 @@
-"""End-to-end orchestrator: prepare data → train every model → train ensemble.
+﻿"""End-to-end orchestrator: prepare data → train every model → train ensemble.
 
 After this finishes, the following bundles are on disk and ready to use:
     baseline/outputs/baseline_tuned.pkl
@@ -36,7 +36,7 @@ def main():
     # 1. Prepare data (skip if split already exists)
     split_path = "analysis_and_inference/models/split_and_features/split.pkl"
     if os.path.exists(split_path):
-        print(f"[skip] {split_path} already exists — using existing split")
+        print(f"[skip] {split_path} already exists - using existing split")
     else:
         banner("STEP 1/7  Preparing data")
         from analysis_and_inference.models.split_and_features.prepare_split import main as prepare_split_main
@@ -45,7 +45,7 @@ def main():
     # 1b. Pre-compute dense features (skip if cache already exists)
     features_path = "analysis_and_inference/models/split_and_features/features.pkl"
     if os.path.exists(features_path):
-        print(f"[skip] {features_path} already exists — using cached features")
+        print(f"[skip] {features_path} already exists - using cached features")
     else:
         banner("STEP 1b   Pre-computing dense features (one-time)")
         import pickle

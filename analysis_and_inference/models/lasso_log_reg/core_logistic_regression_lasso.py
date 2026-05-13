@@ -1,5 +1,5 @@
-"""
-core_logistic_regression_lasso.py — custom implementation of logistic regression with L1 regularization
+﻿"""
+core_logistic_regression_lasso.py - custom implementation of logistic regression with L1 regularization
 
 Custom implementation of L1-regularized logistic regression using gradient
 descent with soft-thresholding. The model follows the sklearn estimator API,
@@ -30,7 +30,7 @@ class LassoLogisticRegression(ClassifierMixin, BaseEstimator):
     # MRO order matters: ClassifierMixin must come before BaseEstimator so that
     # __sklearn_tags__() resolves to the classifier version (sklearn >= 1.6).
 
-    def __init__(self, alpha=0.01, learning_rate=0.1, max_iter=1500, tol=1e-4, fit_intercept=True, decision_threshold=0.5, verbose=False):
+    def __init__(self, alpha=0.01, learning_rate=0.1, max_iter=2000, tol=1e-4, fit_intercept=True, decision_threshold=0.5, verbose=False):
         self.alpha = alpha
         self.learning_rate = learning_rate
         self.max_iter = max_iter
@@ -75,7 +75,7 @@ class LassoLogisticRegression(ClassifierMixin, BaseEstimator):
 
             intercept_new = self.intercept_ 
             if self.fit_intercept: # if clause just in case we don't want an intercept, but we basically always do
-                intercept_new = self.intercept_ - self.learning_rate * (weighted_residual.sum() / sw_sum) # CHANGED: WRITE INTO intercept_new INSTEAD OF MUTATING self.intercept_ DIRECTLY (same math as before — weighted mean of residual scaled by learning rate — just deferred so delta can include it)
+                intercept_new = self.intercept_ - self.learning_rate * (weighted_residual.sum() / sw_sum) # CHANGED: WRITE INTO intercept_new INSTEAD OF MUTATING self.intercept_ DIRECTLY (same math as before - weighted mean of residual scaled by learning rate - just deferred so delta can include it)
 
             delta = max(
                 np.max(np.abs(coef_new - self.coef_)), # original coef-change measurement

@@ -1,5 +1,5 @@
-"""
-test_build_features.py — comprehensive unit and integration tests for the 
+﻿"""
+test_build_features.py - comprehensive unit and integration tests for the 
 feature engineering pipeline in build_features.py
 
 The tests validate the correctness, robustness, and stability of the
@@ -101,7 +101,7 @@ def _make_df(*texts):
 
 
 # ===========================================================================
-# Unit tests — private feature functions
+# Unit tests - private feature functions
 # ===========================================================================
 
 class TestNormalizeLeetspeak:
@@ -389,7 +389,7 @@ class TestExtractIdentity:
 
 
 # ===========================================================================
-# Integration tests — DenseFeatureTransformer
+# Integration tests - DenseFeatureTransformer
 # ===========================================================================
 
 EXPECTED_FEATURE_COLS = {
