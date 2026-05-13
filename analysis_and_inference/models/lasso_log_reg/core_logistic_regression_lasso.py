@@ -30,7 +30,7 @@ class LassoLogisticRegression(ClassifierMixin, BaseEstimator):
     # MRO order matters: ClassifierMixin must come before BaseEstimator so that
     # __sklearn_tags__() resolves to the classifier version (sklearn >= 1.6).
 
-    def __init__(self, alpha=0.01, learning_rate=0.1, max_iter=1500, tol=1e-4, fit_intercept=True, decision_threshold=0.5, verbose=False):
+    def __init__(self, alpha=0.01, learning_rate=0.1, max_iter=2000, tol=1e-4, fit_intercept=True, decision_threshold=0.5, verbose=False):
         self.alpha = alpha
         self.learning_rate = learning_rate
         self.max_iter = max_iter
