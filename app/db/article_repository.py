@@ -1,4 +1,4 @@
-"""
+﻿"""
 article_repository.py - article database and database access layer for storing and retrieving articles and comments
 
 This module implements the application's persistence layer for storing,
@@ -303,7 +303,7 @@ def update_thresholds(article_id, auto_threshold, manual_threshold):
         flagged_count = 0
         for row in comments:
             toxicity = row["toxicity"]
-            # Preserve moderator decisions — only recalculate system-assigned ones
+            # Preserve moderator decisions - only recalculate system-assigned ones
             if row["decision"] == "manual-ban":
                 flagged_count += 1
                 continue

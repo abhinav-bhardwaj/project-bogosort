@@ -1,4 +1,4 @@
-# project-bogosort — Toxic Comment Classifier
+﻿# Project Bogosort - Toxic Comment Classifier
 
 ## Overview
 
@@ -10,12 +10,12 @@ This project is a comprehensive machine learning web application that automatica
 
 ## Purpose and Target Audience
 
-Online platforms — social media sites, comment sections, Wikipedia talk pages, and community forums — generate enormous volumes of user-generated text. Human moderation at that scale is slow, costly, and psychologically taxing for moderators. This application provides an automated first line of defence: it classifies whether a comment is toxic and, crucially, explains *why* the model reached that decision.
+Online platforms - social media sites, comment sections, Wikipedia talk pages, and community forums - generate enormous volumes of user-generated text. Human moderation at that scale is slow, costly, and psychologically taxing for moderators. This application provides an automated first line of defence: it classifies whether a comment is toxic and, crucially, explains *why* the model reached that decision.
 
 The tool is primarily aimed at:
 
 - **Platform moderators and trust-and-safety teams** who need to triage large queues of flagged content quickly and want to understand which signals triggered a decision before acting on it.
-- **Policy researchers and public-sector analysts** who study online toxicity and need an interpretable, auditable classifier — not a black box — to support their analysis.
+- **Policy researchers and public-sector analysts** who study online toxicity and need an interpretable, auditable classifier - not a black box - to support their analysis.
 - **Students and educators** learning about applied NLP and machine learning, who can inspect every step of the pipeline from raw text to final prediction.
 
 Unlike commercial moderation APIs, every component here is open, inspectable, and reproducible: the features are hand-engineered and fully documented, the models are standard scikit-learn estimators, and each prediction comes with SHAP-based feature attributions so a human reviewer can see exactly which words, patterns, or linguistic signals pushed the model toward a toxic or non-toxic verdict.
@@ -81,7 +81,7 @@ data/raw/jigsaw-dataset/train.csv.zip
 project-bogosort/
 ├── analysis_and_inference/          # Model training, feature engineering, evaluation
 │   ├── EDA/
-│   │   ├── eda_v1_3.ipynb           # Exploratory data analysis notebook
+│   │   ├── eda_results.ipynb        # Exploratory data analysis notebook
 │   │   ├── eda_processor.py          # EDA cache computation
 │   │   └── eda_cache.json            # Cached EDA results
 │   ├── features/
@@ -131,7 +131,7 @@ project-bogosort/
 │   │   ├── error.html
 │   │   └── [feature-specific templates]
 │   ├── static/
-│   │   ├── css/                     # Stylesheets
+│   │   ├── styles/                  # CSS stylesheets
 │   │   ├── js/                      # Client-side JavaScript
 │   │   └── team_bio/team_bio.json   # Team member profiles
 │   └── tests/
@@ -142,16 +142,18 @@ project-bogosort/
 ├── data/
 │   ├── raw/jigsaw-dataset/          # Raw Kaggle CSVs (untracked, .gitignore)
 │   └── processed/                   # Cached splits, matrices, embeddings
-├── visuals/                         # EDA plots and analysis outputs
 ├── admin/
 │   ├── meeting_minutes/             # Team meeting notes
 │   ├── documentations/              # Git and collaboration guidelines
 │   ├── design_sprint/               # Design sprint artifacts
 │   └── human_centered_design_sprint/
+├── .github/workflows/ci.yml         # CI test + CD deploy to Hugging Face Spaces
+├── Dockerfile                       # Container image for Hugging Face Spaces
 ├── pyproject.toml                   # Project dependencies and metadata
+├── uv.lock                          # Locked dependency versions (uv)
 ├── wsgi.py                          # WSGI entry point for production
 ├── run.py                           # Development server entry point
-├── LICENSE                          # CC BY-NC 4.0 license
+├── license.txt                      # CC BY-NC 4.0 license
 └── README.md                        # This file
 ```
 
@@ -159,7 +161,7 @@ project-bogosort/
 
 ## Feature Engineering
 
-All text features are computed by `DenseFeatureTransformer` — a stateless, sklearn-compatible transformer that produces ~32 numerical features per comment in a single pass. Features are grouped as follows:
+All text features are computed by `DenseFeatureTransformer` - a stateless, sklearn-compatible transformer that produces ~32 numerical features per comment in a single pass. Features are grouped as follows:
 
 | Group | Features |
 |---|---|
@@ -174,7 +176,7 @@ All text features are computed by `DenseFeatureTransformer` — a stateless, skl
 | **Syntactic** | `negation_count`, `sentence_count`, `avg_sentence_length` |
 | **Identity mentions** | `identity_mention_count`, `identity_race`, `identity_gender`, `identity_sexuality`, `identity_religion`,`identity_disability`,`identity_nationality`|
 
-Features are computed once, scaled with a `StandardScaler`, and cached to disk — all models share the same pre-computed feature matrix so GridSearchCV folds do not redundantly re-run the transformer.
+Features are computed once, scaled with a `StandardScaler`, and cached to disk - all models share the same pre-computed feature matrix so GridSearchCV folds do not redundantly re-run the transformer.
 
 ---
 
@@ -182,7 +184,7 @@ Features are computed once, scaled with a `StandardScaler`, and cached to disk �
 
 Five classifiers are trained and evaluated independently, then combined into a final ensemble.
 
-### Baseline — Dummy Classifier
+### Baseline - Dummy Classifier
 A `DummyClassifier` with stratified strategy. Sets the floor: any real model must beat this.
 
 ### Custom Lasso Logistic Regression
@@ -192,13 +194,13 @@ Built **from scratch** using gradient descent with soft-thresholding (the L1 pen
 sklearn's `LogisticRegression` with L2 penalty (`solver="lbfgs"`). L2 regularization stabilizes coefficient estimates while retaining information from correlated features. Class balancing is enabled.
 
 ### Random Forest
-`RandomForestClassifier` with `class_weight="balanced"`. Captures nonlinear feature interactions and is robust to correlated predictors. A separate `feature_selection.py` script performs post-hoc ablation — comparing full feature set performance against top-5 and top-10 subsets — to quantify which features carry the most predictive weight.
+`RandomForestClassifier` with `class_weight="balanced"`. Captures nonlinear feature interactions and is robust to correlated predictors. A separate `feature_selection.py` script performs post-hoc ablation - comparing full feature set performance against top-5 and top-10 subsets - to quantify which features carry the most predictive weight.
 
 ### Linear SVM
 `LinearSVC` with class balancing. Well-suited to high-dimensional feature spaces. Because `LinearSVC` does not expose `predict_proba`, the raw `decision_function` output is used as a ranking score for ROC-AUC and PR-AUC, and threshold tuning is skipped automatically.
 
 ### Ensemble (final classifier)
-A soft-vote ensemble over Lasso, Ridge, and Random Forest (SVM is excluded — no `predict_proba`). Soft voting averages predicted probabilities rather than hard class labels, preserving model confidence and producing smoother decisions on ambiguous comments. The three member models are loaded from their serialized artifacts without retraining; the `VotingClassifier` is manually wired with pre-fit estimators.
+A soft-vote ensemble over Lasso, Ridge, and Random Forest (SVM is excluded - no `predict_proba`). Soft voting averages predicted probabilities rather than hard class labels, preserving model confidence and producing smoother decisions on ambiguous comments. The three member models are loaded from their serialized artifacts without retraining; the `VotingClassifier` is manually wired with pre-fit estimators.
 
 ---
 
@@ -337,7 +339,7 @@ All API endpoints are under `/api/`:
 - Python >= 3.10
 - **Core:** `pandas`, `numpy`, `scipy`, `scikit-learn`, `vaderSentiment`, `matplotlib`, `flask`, `requests`
 - **Dev/testing:** `pytest >= 9.0.2`
-- **Optional — BERT embeddings** (large download, ~2 GB, only needed if `BertTransformer` is used):
+- **Optional - BERT embeddings** (large download, ~2 GB, only needed if `BertTransformer` is used):
   ```bash
   uv add torch transformers
   ```
@@ -383,6 +385,61 @@ uv run pytest app/tests/test_services/test_toxicity_service.py
 # Run with coverage
 uv run pytest --cov=app --cov=analysis_and_inference
 ```
+
+---
+
+## Continuous Integration and Deployment
+
+The project ships with a single GitHub Actions workflow at [.github/workflows/ci.yml](.github/workflows/ci.yml) that handles both CI (running the test suite on every push and pull request) and CD (deploying the live web app to Hugging Face Spaces on every push to `dev`).
+
+**Live app:** https://huggingface.co/spaces/David-Moth/Wikipedia-Toxic-Comment-Classifier
+
+### Continuous Integration — the `test` job
+
+Triggered on every `push` to `dev` and every `pull_request` targeting `dev`. The job runs on `ubuntu-latest` and executes the following steps:
+
+1. **Checkout** the repository.
+2. **Install `uv`** via Astral's official action — the same package manager used locally.
+3. **Set up Python 3.10**, matching the version pinned in `pyproject.toml`.
+4. **Install dependencies** with `uv sync --frozen` so the CI environment matches `uv.lock` exactly. This catches lockfile drift early.
+5. **Run the test suite** with `uv run pytest app/tests/ -v`. Any failing test fails the workflow and blocks merges.
+
+This guards against regressions in routes, services, the inference pipeline, and the database layer.
+
+### Continuous Deployment — the `deploy` job
+
+Runs only on `push` events to `dev` (skipped for pull requests) and only after the `test` job passes (`needs: test`). The deployed Space mirrors the latest green build on `dev`.
+
+The deploy job builds a **slim deploy tree** containing only what the running app needs (~10 MB of code) and force-syncs it to the Hugging Face Space's git repository:
+
+1. **Stage a slim copy** of the project in `/tmp/deploy/`:
+   - The entire [app/](app/) Flask application (routes, services, templates, static assets).
+   - Top-level files needed at build/run time: [Dockerfile](Dockerfile), [wsgi.py](wsgi.py), [pyproject.toml](pyproject.toml), [uv.lock](uv.lock), [README.md](README.md).
+   - The full [analysis_and_inference/](analysis_and_inference/) source tree, **excluding** tests, `__pycache__`, `*.pkl`, `*.npz`, and `*.csv`. This includes every model's training and inference code so unpickling on the Space can find all custom classes (e.g. `LassoLogisticRegression`).
+2. **Recreate empty `outputs/` directories** for each model so the .pkl artifacts uploaded to the Space land in the expected paths.
+3. **Clone the existing HF Space repository** into `/tmp/space/` so previously-uploaded model artifacts and `.gitattributes` are preserved.
+4. **Overlay the slim tree** with `rsync --delete --exclude='*.pkl' --exclude='.gitattributes'`. Stale files in the Space that are no longer in `app/` get deleted, but the large `.pkl` model files uploaded out-of-band are kept intact across deploys.
+5. **Enable Git LFS** locally and register additional binary extensions (`*.png`, `*.jpg`, `*.jpeg`, `*.gif`, `*.db`, `*.npy`, `*.npz`, `*.ipynb`). Hugging Face's xet storage speaks the LFS protocol, so binary files transparently route through their content-addressable backend instead of being rejected as oversized git blobs.
+6. **Commit and push** to the Space's `main` branch. Hugging Face detects the push, rebuilds the Docker image defined by [Dockerfile](Dockerfile), and restarts the container.
+
+### Secrets and one-time setup
+
+The `deploy` job requires two GitHub Actions secrets configured at **Settings → Secrets and variables → Actions**:
+
+- `HF_TOKEN` — a Hugging Face access token with **Write** scope.
+- `HF_NAME` — the HF username that owns the target Space.
+
+The model `.pkl` artifacts (~512 MB total) are too large to ship through git on every deploy, so they were uploaded once via `hf upload` and live permanently on the Space. The deploy workflow never touches them — the `*.pkl` exclude rule in step 4 keeps them safe.
+
+### Lifecycle
+
+A typical deploy cycle:
+
+1. Push a commit to `dev` on GitHub.
+2. GitHub Actions runs the `test` job (~30 s). If anything fails, the deploy is skipped.
+3. The `deploy` job stages, syncs, and pushes the slim tree to Hugging Face.
+4. Hugging Face rebuilds the Docker image (≈ 5–10 min) and restarts the container.
+5. The change is live at the Space URL above.
 
 ---
 

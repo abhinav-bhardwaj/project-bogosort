@@ -1,9 +1,9 @@
-"""
+﻿"""
 feature_evaluation.py - heavy feature-importance analyses (permutation + SHAP) and a coef CSV
 
 The basic feature-importance plot (model.coef_ or model.feature_importances_) is
 already produced by evaluator.py during run_all.py and saved as
-`evaluation/feature_importance.png` — no need to re-render it here. This script
+`evaluation/feature_importance.png` - no need to re-render it here. This script
 adds the deeper, expensive analyses on top of that.
 
 Run manually for a given model after run_all.py has saved its tuned pipeline:
@@ -87,7 +87,7 @@ def perm_importance(estimator, X_test, y_test, feature_names, save_dir):
             color="steelblue", alpha=0.85, capsize=3)
     ax.axvline(0, color="grey", linewidth=0.8, linestyle="--")
     ax.set_xlabel("Mean decrease in ROC-AUC when feature is shuffled")
-    ax.set_title(f"Top {TOP_N} Features — Permutation Importance (test set)")
+    ax.set_title(f"Top {TOP_N} Features - Permutation Importance (test set)")
     ax.grid(axis="x", alpha=0.3)
     plt.tight_layout()
     png = os.path.join(save_dir, "perm_importance.png")

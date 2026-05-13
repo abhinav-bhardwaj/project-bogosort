@@ -41,7 +41,7 @@
 
     /* SHAP rows (same as comment.html styles, inlined for isolation) */
     .shap-intro { font-size: 0.88rem; color: var(--text-muted, #666); margin-bottom: 0.75rem; }
-    .shap-row { display: grid; grid-template-columns: 1fr 1.5fr auto; align-items: center; gap: 0.6rem; padding: 0.4rem 0; border-bottom: 1px solid var(--border-light, #f0f0f0); }
+    .shap-row { display: grid; grid-template-columns: 1fr 1.5fr 160px; align-items: center; gap: 0.6rem; padding: 0.4rem 0; border-bottom: 1px solid var(--border-light, #f0f0f0); }
     .shap-row:last-child { border-bottom: none; }
     .shap-label { font-size: 0.85rem; font-weight: 600; }
     .shap-feature-name { display: block; font-size: 0.72rem; color: var(--text-muted, #888); font-weight: 400; font-family: monospace; }
@@ -49,11 +49,11 @@
     .shap-bar { height: 100%; border-radius: 3px; min-width: 2px; }
     .shap-bar-pos { background: #c43b3b; }
     .shap-bar-neg { background: #3b6fc4; }
-    .shap-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 0.15rem; min-width: 110px; }
-    .shap-direction { font-size: 0.75rem; }
+    .shap-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 0.15rem; width: 160px; }
+    .shap-direction { font-size: 0.75rem; white-space: nowrap; }
     .shap-dir-pos { color: #c43b3b; }
     .shap-dir-neg { color: #3b6fc4; }
-    .shap-value { font-size: 0.78rem; color: var(--text-muted, #666); }
+    .shap-value { font-size: 0.78rem; color: var(--text-muted, #666); text-align: right; word-break: break-word; }
     .shap-empty { color: var(--text-muted, #888); font-size: 0.88rem; }
 
     .threshold-zone-wrap { margin: 0.5rem 0; }
@@ -164,6 +164,11 @@
 
 {% block scripts %}
 <script>
+/** Thrown when the selected model's files are missing on the server. */
+class ModelUnavailableError extends Error {
+  constructor(msg) { super(msg); this.name = "ModelUnavailableError"; }
+}
+
 const FEATURE_LABELS = {
   vader_compound:      { label: "Overall sentiment",          fmt: v => v.toFixed(2) + " (−1 = very negative, +1 = positive)" },
   vader_neg:           { label: "Negative tone",              fmt: v => (v * 100).toFixed(0) + "% of text" },
@@ -308,6 +313,15 @@ async function runInference() {
 
     if (!res.ok) {
       const errBody = await res.json().catch(() => ({}));
+      // 503 with MODEL_UNAVAILABLE gets a specific, actionable message
+      if (res.status === 503 || errBody.error_code === "MODEL_UNAVAILABLE") {
+        const modelLabel = document.getElementById("demoModel").selectedOptions[0]?.text
+          || document.getElementById("demoModel").value;
+        throw new ModelUnavailableError(
+          `"${modelLabel}" is not available on this server. ` +
+          "Try selecting a different model from the dropdown."
+        );
+      }
       throw new Error(errBody.error || `Server error (${res.status})`);
     }
 
@@ -321,7 +335,15 @@ async function runInference() {
     renderResult(data);
     setStatus("");
   } catch (err) {
-    setStatus(err.message, "error");
+    if (err instanceof ModelUnavailableError) {
+      setStatus(err.message, "error");
+      // Visually flag the model selector so the user knows where to act
+      const sel = document.getElementById("demoModel");
+      sel.style.outline = "2px solid #c43b3b";
+      sel.addEventListener("change", () => { sel.style.outline = ""; }, { once: true });
+    } else {
+      setStatus(err.message, "error");
+    }
   } finally {
     btn.disabled = false; btn.textContent = "Analyse";
   }

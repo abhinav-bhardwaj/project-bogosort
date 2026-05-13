@@ -2,8 +2,17 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir \
+    pandas \
+    numpy \
+    scipy \
+    scikit-learn \
+    vaderSentiment \
+    matplotlib \
+    flask \
+    imageio \
+    shap \
+    gunicorn
 
 COPY . .
 

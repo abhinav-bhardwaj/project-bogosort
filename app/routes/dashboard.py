@@ -1,5 +1,5 @@
-"""
-dashboard.py — routes for dashboard views
+﻿"""
+dashboard.py - routes for dashboard views
 
 This module keeps dashboard routing intentionally minimal by separating view
 rendering from application logic. The Blueprint acts only as a navigation layer
@@ -16,9 +16,9 @@ from flask import Blueprint, render_template
 dashboard = Blueprint('dashboard', __name__)
 
 
-@dashboard.route('/')
-def dashboard_page():
-    return render_template('dashboard.html')
+#@dashboard.route('/')
+#def dashboard_page():
+#    return render_template('dashboard.html')
 
 @dashboard.route("/nerdy/")
 def nerdy_dashboard():

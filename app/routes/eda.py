@@ -1,5 +1,5 @@
-"""
-eda.py — routes for exploratory data analysis visualizations
+﻿"""
+eda.py - routes for exploratory data analysis visualizations
 
 This module serves precomputed EDA statistics and visualizations through both
 HTML views and JSON API endpoints.

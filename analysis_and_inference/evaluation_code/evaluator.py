@@ -1,15 +1,15 @@
-"""Standard classification evaluation: prints metrics and saves individual PNGs.
+﻿"""Standard classification evaluation: prints metrics and saves individual PNGs.
 
 Plots produced (each as a separate file inside `save_dir`):
     confusion_matrix.png
     roc_curve.png            (only if y_score given)
     pr_curve.png             (only if y_score given)
-    calibration.png          (only if y_score is in [0, 1] — skipped for raw SVM scores)
+    calibration.png          (only if y_score is in [0, 1] - skipped for raw SVM scores)
     feature_importance.png   (only if `model` is provided and exposes coef_ or
                               feature_importances_; skipped silently otherwise)
 
 Heavy analyses (SHAP, permutation importance, error analysis) live in
-feature_evaluation.py and error_analysis.py — run those separately.
+feature_evaluation.py and error_analysis.py - run those separately.
 """
 
 import os
@@ -51,7 +51,7 @@ def _get_importances(model):
 def _save_confusion_matrix(cm, name, save_dir):
     fig, ax = plt.subplots(figsize=(5, 5))
     ax.imshow(cm, interpolation="nearest", cmap="Blues")
-    ax.set_title(f"{name} — Confusion Matrix")
+    ax.set_title(f"{name} - Confusion Matrix")
     labels = ["Non-toxic", "Toxic"]
     ax.set_xticks([0, 1]); ax.set_xticklabels(labels)
     ax.set_yticks([0, 1]); ax.set_yticklabels(labels)
@@ -73,7 +73,7 @@ def _save_roc_curve(fpr, tpr, roc_auc, name, save_dir):
     fig, ax = plt.subplots(figsize=(6, 5))
     ax.plot(fpr, tpr, label=f"ROC AUC = {roc_auc:.4f}")
     ax.plot([0, 1], [0, 1], linestyle="--", color="grey")
-    ax.set_title(f"{name} — ROC Curve")
+    ax.set_title(f"{name} - ROC Curve")
     ax.set_xlabel("False Positive Rate")
     ax.set_ylabel("True Positive Rate")
     ax.legend(loc="lower right")
@@ -88,7 +88,7 @@ def _save_roc_curve(fpr, tpr, roc_auc, name, save_dir):
 def _save_pr_curve(pr_recall, pr_precision, pr_auc_trapz, ap_score, name, save_dir):
     fig, ax = plt.subplots(figsize=(6, 5))
     ax.plot(pr_recall, pr_precision, label=f"PR AUC = {pr_auc_trapz:.4f}\nAP = {ap_score:.4f}")
-    ax.set_title(f"{name} — Precision-Recall Curve")
+    ax.set_title(f"{name} - Precision-Recall Curve")
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
     ax.legend(loc="lower left")
@@ -105,7 +105,7 @@ def _save_calibration_curve(y_true, y_score, name, save_dir):
     fig, ax = plt.subplots(figsize=(6, 5))
     ax.plot([0, 1], [0, 1], linestyle="--", color="grey", label="Perfectly calibrated")
     ax.plot(prob_pred, prob_true, marker="o", label=name)
-    ax.set_title(f"{name} — Calibration Curve")
+    ax.set_title(f"{name} - Calibration Curve")
     ax.set_xlabel("Mean predicted probability")
     ax.set_ylabel("Fraction of positives")
     ax.legend(loc="upper left")
@@ -131,11 +131,11 @@ def _save_feature_importance(values, kind, feature_names, name, save_dir, top_n=
         ax.barh(sel_names[::-1], sel_vals[::-1], color=colours[::-1], alpha=0.85)
         ax.axvline(0, color="grey", linewidth=0.8, linestyle="--")
         ax.set_xlabel("Coefficient (blue = positive, red = negative)")
-        ax.set_title(f"{name} — Top {top_n} Feature Coefficients")
+        ax.set_title(f"{name} - Top {top_n} Feature Coefficients")
     else:
         ax.barh(sel_names[::-1], sel_vals[::-1], color="steelblue", alpha=0.85)
         ax.set_xlabel("Importance")
-        ax.set_title(f"{name} — Top {top_n} Feature Importances")
+        ax.set_title(f"{name} - Top {top_n} Feature Importances")
     ax.grid(axis="x", alpha=0.3)
     plt.tight_layout()
     path = os.path.join(save_dir, "feature_importance.png")
@@ -153,11 +153,11 @@ def evaluate_classification(y_true, y_pred, y_score=None, name="Model",
     ----------
     y_true, y_pred : array-like (binary 0/1)
     y_score : array-like (probability or decision score). Optional.
-    name : str — used in plot titles
-    plot_curves : bool — if False, skip all plotting
-    save_dir : str or None — directory for PNGs (created if missing). If None, no plots saved.
-    model : fitted estimator — optional; used to extract coef_ or feature_importances_
-    feature_names : list[str] — optional; pairs with `model` for the importance plot
+    name : str - used in plot titles
+    plot_curves : bool - if False, skip all plotting
+    save_dir : str or None - directory for PNGs (created if missing). If None, no plots saved.
+    model : fitted estimator - optional; used to extract coef_ or feature_importances_
+    feature_names : list[str] - optional; pairs with `model` for the importance plot
     """
     print(f"\n===== {name} Evaluation =====")
 

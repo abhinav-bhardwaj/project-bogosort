@@ -1,5 +1,5 @@
-"""
-conftest.py — shared pytest fixtures for model smoke tests
+﻿"""
+conftest.py - shared pytest fixtures for model smoke tests
 
 This module centralizes reusable pytest fixtures so all model tests share
 the same lightweight synthetic dataset and environment setup.
@@ -40,7 +40,7 @@ import pytest
 
 @pytest.fixture
 def tiny_data():
-    """50 synthetic comments, balanced 0/1 labels — enough for smoke tests."""
+    """50 synthetic comments, balanced 0/1 labels - enough for smoke tests."""
     toxic_examples = [
         "you are an idiot and a moron",
         "fuck off you piece of trash",

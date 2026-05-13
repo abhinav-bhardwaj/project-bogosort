@@ -1,5 +1,5 @@
-"""
-baseline.py — random baseline classifier for toxicity detection
+﻿"""
+baseline.py - random baseline classifier for toxicity detection
 
 This model implements a simple benchmark model using sklearn's DummyClassifier.
 This establishes a minimum performance baseline that all real machine
