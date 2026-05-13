@@ -39,15 +39,42 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          lfs: true
 
-      - name: Push to Hugging Face Space
+      - name: Build slim deploy tree
+        run: |
+          mkdir -p /tmp/deploy
+          cp -r app /tmp/deploy/
+          cp Dockerfile wsgi.py pyproject.toml uv.lock README.md /tmp/deploy/
+          mkdir -p /tmp/deploy/analysis_and_inference/features
+          mkdir -p /tmp/deploy/analysis_and_inference/models/ensemble/outputs
+          mkdir -p /tmp/deploy/analysis_and_inference/models/split_and_features
+          mkdir -p /tmp/deploy/analysis_and_inference/EDA
+          cp analysis_and_inference/__init__.py /tmp/deploy/analysis_and_inference/ 2>/dev/null || true
+          cp analysis_and_inference/features/build_features.py /tmp/deploy/analysis_and_inference/features/
+          cp analysis_and_inference/features/__init__.py /tmp/deploy/analysis_and_inference/features/ 2>/dev/null || true
+          cp analysis_and_inference/models/inference.py /tmp/deploy/analysis_and_inference/models/
+          cp analysis_and_inference/models/_common.py /tmp/deploy/analysis_and_inference/models/
+          cp analysis_and_inference/models/__init__.py /tmp/deploy/analysis_and_inference/models/ 2>/dev/null || true
+          cp analysis_and_inference/models/ensemble/outputs/ensemble_soft_vote_tuned.pkl \
+             /tmp/deploy/analysis_and_inference/models/ensemble/outputs/
+          cp analysis_and_inference/models/split_and_features/features.pkl \
+             /tmp/deploy/analysis_and_inference/models/split_and_features/
+          cp analysis_and_inference/EDA/eda_cache.json /tmp/deploy/analysis_and_inference/EDA/ 2>/dev/null || true
+          find /tmp/deploy -type d -name __pycache__ -prune -exec rm -rf {} +
+          find /tmp/deploy -type d -name .pytest_cache -prune -exec rm -rf {} +
+          du -sh /tmp/deploy
+
+      - name: Push slim tree to Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_NAME: ${{ secrets.HF_NAME }}
         run: |
+          cd /tmp/deploy
+          git init -b main
+          git config user.email "deploy@github-actions"
+          git config user.name "github-actions"
+          git add .
+          git commit -m "Deploy from GitHub commit ${GITHUB_SHA}"
           git push --force \
             "https://${HF_NAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_NAME}/Wikipedia-Toxic-Comment-Classifier" \
-            HEAD:main
+            main:main
