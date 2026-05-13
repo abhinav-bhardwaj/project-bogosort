@@ -221,16 +221,21 @@ async function loadModels() {
   const select = document.getElementById("demoModel");
   try {
     const res = await fetch("/api/models");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    (data.models || []).forEach(m => {
+    const models = data.models || [];
+    if (!models.length) throw new Error("No models returned");
+    models.forEach(m => {
       const opt = document.createElement("option");
       opt.value = m.model_id;
       const meta = MODEL_META[m.model_id];
       opt.textContent = meta?.tag ? `${m.model_name} — ${meta.tag}` : m.model_name;
       select.appendChild(opt);
     });
-  } catch {
-    select.innerHTML = '<option value="ensemble">Ensemble</option>';
+  } catch (err) {
+    console.error("Failed to load models:", err.message);
+    select.innerHTML = '<option value="ensemble">Ensemble (default)</option>';
+    setStatus("Could not load model list — using default.", "warn");
   }
   select.addEventListener("change", onModelChange);
   onModelChange();
@@ -272,39 +277,72 @@ function updateZone() {
 
 async function runInference() {
   const text = document.getElementById("demoText").value.trim();
-  if (!text) { setStatus("Please enter some comment text."); return; }
+  if (!text) { setStatus("Please enter some comment text.", "warn"); return; }
 
-  const model_name      = document.getElementById("demoModel").value;
-  const auto_threshold  = parseFloat(document.getElementById("dAutoThreshold").value);
+  const model_name       = document.getElementById("demoModel").value;
+  const auto_threshold   = parseFloat(document.getElementById("dAutoThreshold").value);
   const manual_threshold = parseFloat(document.getElementById("dManualThreshold").value);
+
+  // Client-side threshold order guard
+  if (manual_threshold > auto_threshold) {
+    setStatus("Review threshold cannot be higher than the auto-ban threshold — please adjust the sliders.", "error");
+    return;
+  }
 
   const btn = document.getElementById("demoBtn");
   btn.disabled = true; btn.textContent = "Analysing…";
-  setStatus("Running inference…");
+  setStatus("Running inference…", "info");
   document.getElementById("demoResult").style.display = "none";
 
   try {
-    const res = await fetch("/api/demo/infer", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, model_name, auto_threshold, manual_threshold }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || res.statusText);
+    let res;
+    try {
+      res = await fetch("/api/demo/infer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, model_name, auto_threshold, manual_threshold }),
+      });
+    } catch {
+      throw new Error("Could not reach the server — check your connection and try again.");
     }
-    const data = await res.json();
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.error || `Server error (${res.status})`);
+    }
+
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      throw new Error("Server returned an unexpected response — please try again.");
+    }
+
     renderResult(data);
     setStatus("");
   } catch (err) {
-    setStatus("Error: " + err.message);
+    setStatus(err.message, "error");
   } finally {
     btn.disabled = false; btn.textContent = "Analyse";
   }
 }
 
 function renderResult(data) {
-  const { text, model_name, toxicity, decision, auto_threshold, manual_threshold, inference_ms, top_features } = data;
+  // Defensive destructuring — guard every numeric field against null/undefined
+  const text           = data.text           ?? "";
+  const model_name     = data.model_name     ?? "unknown";
+  const toxicity       = typeof data.toxicity       === "number" ? data.toxicity       : null;
+  const auto_threshold = typeof data.auto_threshold === "number" ? data.auto_threshold : null;
+  const manual_threshold = typeof data.manual_threshold === "number" ? data.manual_threshold : null;
+  const inference_ms   = typeof data.inference_ms   === "number" ? data.inference_ms   : null;
+  const decision       = data.decision ?? "none";
+  const top_features   = Array.isArray(data.top_features) ? data.top_features : [];
+
+  // If the score is missing the result is meaningless — surface a clear error
+  if (toxicity === null) {
+    setStatus("Server returned an incomplete result (missing toxicity score). Please try again.", "error");
+    return;
+  }
 
   document.getElementById("resCommentText").textContent = text;
 
@@ -325,38 +363,77 @@ function renderResult(data) {
   }
 
   document.getElementById("resRuleText").textContent =
-    decision === "auto-ban"      ? `toxicity ≥ ${auto_threshold.toFixed(2)} (auto-ban threshold)` :
-    decision === "manual-review" ? `toxicity ≥ ${manual_threshold.toFixed(2)} (review threshold)` :
+    decision === "auto-ban"      && auto_threshold   !== null ? `toxicity ≥ ${auto_threshold.toFixed(2)} (auto-ban threshold)` :
+    decision === "manual-review" && manual_threshold !== null ? `toxicity ≥ ${manual_threshold.toFixed(2)} (review threshold)` :
     "Below both thresholds";
 
   document.getElementById("resModel").textContent       = model_name;
-  document.getElementById("resInferenceMs").textContent = inference_ms > 0 ? `${inference_ms.toFixed(2)} ms` : "—";
-  document.getElementById("resAutoThr").textContent     = auto_threshold.toFixed(2);
-  document.getElementById("resManualThr").textContent   = manual_threshold.toFixed(2);
+  document.getElementById("resInferenceMs").textContent = inference_ms !== null && inference_ms > 0 ? `${inference_ms.toFixed(2)} ms` : "—";
+  document.getElementById("resAutoThr").textContent     = auto_threshold   !== null ? auto_threshold.toFixed(2)   : "—";
+  document.getElementById("resManualThr").textContent   = manual_threshold !== null ? manual_threshold.toFixed(2) : "—";
 
   const featureList = document.getElementById("resFeatureList");
   featureList.innerHTML = "";
 
-  const features = top_features || [];
-  if (!features.length) {
-    featureList.innerHTML = "<p class='shap-empty'>No explanation available.</p>";
+  if (!top_features.length) {
+    const p = document.createElement("p");
+    p.className = "shap-empty";
+    p.textContent = "No explanation available.";
+    featureList.appendChild(p);
   } else {
-    const maxShap = Math.max(...features.map(f => Math.abs(f.shap)));
-    features.forEach(f => {
-      const meta   = FEATURE_LABELS[f.feature] || { label: f.feature, fmt: v => v.toFixed(3) };
-      const isPos  = f.shap >= 0;
-      const barPct = maxShap > 0 ? (Math.abs(f.shap) / maxShap * 100).toFixed(1) : 0;
+    const maxShap = Math.max(...top_features.map(f => Math.abs(f.shap ?? 0)));
+    top_features.forEach(f => {
+      const shap  = typeof f.shap  === "number" ? f.shap  : 0;
+      const value = f.value;  // may be null for some models — handled in fmt below
+      const featureName = typeof f.feature === "string" ? f.feature : "";
+      const meta  = FEATURE_LABELS[featureName] || {
+        label: featureName || "Unknown feature",
+        fmt: v => (v !== null && v !== undefined) ? String(v) : "—",
+      };
+      const isPos  = shap >= 0;
+      const barPct = maxShap > 0 ? (Math.abs(shap) / maxShap * 100).toFixed(1) : 0;
+
+      // Safe fmt call — if the feature formatter throws (e.g. null.toFixed), fall back gracefully
+      let formattedValue;
+      try {
+        formattedValue = (value !== null && value !== undefined) ? meta.fmt(value) : "—";
+      } catch {
+        formattedValue = value !== null && value !== undefined ? String(value) : "—";
+      }
+
+      // Build DOM nodes instead of innerHTML to avoid any XSS from feature names
       const row = document.createElement("div");
       row.className = "shap-row";
-      row.innerHTML = `
-        <div class="shap-label">${meta.label}<span class="shap-feature-name">${f.feature}</span></div>
-        <div class="shap-bar-track">
-          <div class="shap-bar ${isPos ? "shap-bar-pos" : "shap-bar-neg"}" style="width:${barPct}%"></div>
-        </div>
-        <div class="shap-meta">
-          <span class="shap-direction ${isPos ? "shap-dir-pos" : "shap-dir-neg"}">${isPos ? "↑ increases risk" : "↓ reduces risk"}</span>
-          <span class="shap-value">${meta.fmt(f.value)}</span>
-        </div>`;
+
+      const labelDiv = document.createElement("div");
+      labelDiv.className = "shap-label";
+      labelDiv.textContent = meta.label;
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "shap-feature-name";
+      nameSpan.textContent = featureName;
+      labelDiv.appendChild(nameSpan);
+
+      const barTrack = document.createElement("div");
+      barTrack.className = "shap-bar-track";
+      const bar = document.createElement("div");
+      bar.className = `shap-bar ${isPos ? "shap-bar-pos" : "shap-bar-neg"}`;
+      bar.style.width = `${barPct}%`;
+      barTrack.appendChild(bar);
+
+      const metaDiv = document.createElement("div");
+      metaDiv.className = "shap-meta";
+      const dirSpan = document.createElement("span");
+      dirSpan.className = `shap-direction ${isPos ? "shap-dir-pos" : "shap-dir-neg"}`;
+      dirSpan.textContent = isPos ? "↑ increases risk" : "↓ reduces risk";
+      const valSpan = document.createElement("span");
+      valSpan.className = "shap-value";
+      valSpan.textContent = formattedValue;
+      metaDiv.appendChild(dirSpan);
+      metaDiv.appendChild(valSpan);
+
+      row.appendChild(labelDiv);
+      row.appendChild(barTrack);
+      row.appendChild(metaDiv);
       featureList.appendChild(row);
     });
   }
@@ -365,8 +442,14 @@ function renderResult(data) {
   document.getElementById("demoResult").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function setStatus(msg) {
-  document.getElementById("demoStatus").textContent = msg;
+/** level: "info" | "warn" | "error" | "" (clear) */
+function setStatus(msg, level = "info") {
+  const el = document.getElementById("demoStatus");
+  el.textContent = msg;
+  el.style.color =
+    level === "error" ? "#c43b3b" :
+    level === "warn"  ? "#c48a3b" :
+    "var(--text-muted, #666)";
 }
 </script>
 {% endblock %}
