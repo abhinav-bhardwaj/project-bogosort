@@ -84,7 +84,13 @@ jobs:
             --exclude='.gitattributes' \
             --exclude='*.pkl' \
             /tmp/deploy/ /tmp/space/
+          # Tell git-lfs (which HF accepts via xet) to handle binary file types.
+          # HF rejects any binary file pushed as a regular git blob.
+          git lfs install --local
+          git lfs track "*.png" "*.jpg" "*.jpeg" "*.gif" "*.db" "*.npy" "*.npz" "*.ipynb"
+          git add .gitattributes
           git add -A
+          git add --renormalize . || true
           if git diff --cached --quiet; then
             echo "No changes to deploy."
           else
